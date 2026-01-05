@@ -35,11 +35,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
 
     return (
         <div className="flex h-screen w-full bg-[#f2f2f2] overflow-hidden select-none">
-            {/* Sidebar with Gaussian Blur */}
-            <aside className={`${sidebarWidth} bg-[#444444]/85 backdrop-blur-xl flex flex-col shrink-0 border-r border-white/10 z-40 shadow-2xl transition-all duration-300 relative`}>
+            {/* Sidebar with Gaussian Blur and Safe Area Support */}
+            <aside className={`${sidebarWidth} pt-[env(safe-area-inset-top)] bg-[#444444]/85 backdrop-blur-xl flex flex-col shrink-0 border-r border-white/10 z-40 shadow-2xl transition-all duration-300 relative`}>
                 <button 
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="absolute -right-[0.75rem] top-[6rem] w-6 h-6 bg-[#2d2d2d] text-white flex items-center justify-center rounded-full border border-gray-600 z-50 hover:bg-black transition-colors"
+                    className="absolute -right-[0.75rem] top-[calc(6rem+env(safe-area-inset-top))] w-6 h-6 bg-[#2d2d2d] text-white flex items-center justify-center rounded-full border border-gray-600 z-50 hover:bg-black transition-colors"
                 >
                     <div className={`transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}>
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -100,8 +100,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
 
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col relative min-w-0">
-                <header className="h-[5rem] bg-white/95 backdrop-blur-md flex items-center justify-between border-b border-gray-200 z-30 shadow-sm">
-                    <div className="flex h-full items-center">
+                {/* Header with Safe Area Support */}
+                <header className="min-h-[5rem] pt-[env(safe-area-inset-top)] bg-white/95 backdrop-blur-md flex items-center justify-between border-b border-gray-200 z-30 shadow-sm box-content">
+                    <div className="flex h-[5rem] items-center">
                         <div className="flex items-center bg-[#2d2d2d] text-white h-full px-8 space-x-4 relative">
                             <div className="w-5 h-5 flex items-center justify-center">
                                 <Icons.Settings />
@@ -111,7 +112,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                         </div>
                     </div>
 
-                    <div className="px-8 flex items-center space-x-6">
+                    <div className="px-8 flex items-center space-x-6 h-[5rem]">
                         <div className="text-right hidden sm:block">
                             <div className="text-[0.6rem] font-black tracking-tighter text-gray-400 leading-none">RHODES ISLAND</div>
                             <div className="text-[0.6rem] font-black tracking-tighter text-gray-400 leading-none">PRTS V2.0.5</div>
@@ -132,7 +133,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                     </div>
                 </div>
 
-                <div className="h-2 bg-[#1a1a1a] flex shrink-0">
+                <div className="h-2 bg-[#1a1a1a] flex shrink-0 pb-[env(safe-area-inset-bottom)]">
                     <div className="h-full bg-[#0098dc] w-1/4 shadow-[0_0_10px_#0098dc]"></div>
                     <div className="h-full bg-[#ffcf00] w-4 ml-2"></div>
                 </div>
