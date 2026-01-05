@@ -1,0 +1,60 @@
+
+import React from 'react';
+
+export const COLORS = {
+    RHODES_WHITE: '#f4f4f4',
+    RHODES_DARK: '#2d2d2d',
+    RHODES_BLUE: '#0098dc',
+    RHODES_GREY: '#e0e0e0',
+    RHODES_TEXT_MUTED: '#888888',
+};
+
+export const Icons = {
+    Back: () => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
+            <path d="M15 18l-6-6 6-6" />
+        </svg>
+    ),
+    Settings: () => (
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+        </svg>
+    ),
+    // Tactical diamond/list icon for Tasks
+    Task: () => (
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 mb-1">
+            <path d="M12 2L4 7v10l8 5 8-5V7l-8-5zm0 2.5l6 3.75v7.5l-6 3.75-6-3.75v-7.5l6-3.75zM7 9v1h10V9H7zm0 3v1h10v-1H7zm0 3v1h7v-1H7z" />
+        </svg>
+    ),
+    // Tactical grid/container icon for Warehouse
+    Warehouse: () => (
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 mb-1">
+            <path d="M3 4h18v2H3V4zm0 5h8v4H3V9zm10 0h8v11h-8V9zm-10 6h8v5H3v-5zM5 11h4v1H5v-1zm10 0h4v1h-4v-1zm-10 6h4v1H5v-1z" />
+        </svg>
+    ),
+    Notify: () => (
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 mb-1">
+            <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z" />
+        </svg>
+    ),
+    Stats: () => (
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 mb-1">
+            <path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z" />
+        </svg>
+    ),
+    User: () => (
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 mb-1">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+        </svg>
+    ),
+    Plus: () => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-6 h-6">
+            <path d="M12 5v14M5 12h14" />
+        </svg>
+    ),
+    Close: () => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-6 h-6">
+            <path d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    )
+};
