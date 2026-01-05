@@ -140,7 +140,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({ todo, categoryName, onToggle, 
                             )}
                             {todo.dueDate && !todo.completed && (
                                 <span className="text-[9px] font-black px-1.5 bg-gray-100 text-gray-500 tracking-[0.15em] whitespace-nowrap flex items-center">
-                                    <svg className="w-2.5 h-2.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    <svg className="w-2.5 h-2.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" /></svg>
                                     {todo.dueDate}
                                 </span>
                             )}
@@ -287,7 +287,7 @@ export const CategoryManager: React.FC<{
 
     return (
         <div className="bg-white border border-gray-200 p-6 shadow-sm mb-10">
-            <h3 className="text-[10px] font-black text-gray-400 tracking-widest italic mb-4">行动扇区管理</h3>
+            <h3 className="text-[10px] font-black text-gray-400 tracking-widest italic mb-4">行动扇区管理 / ACTION SECTOR</h3>
             <div className="flex space-x-2 mb-6">
                 <input 
                     type="text" 
@@ -695,11 +695,16 @@ export const TemplateInput: React.FC<{
 
 export const ScheduleCalendar: React.FC<{ todos: Todo[], getCategoryName: (id?: string) => string | undefined }> = ({ todos }) => {
     const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [viewMode, setViewMode] = useState<'MONTH' | 'THREE_DAY'>('THREE_DAY');
 
     const daysInMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
     const firstDayOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
-    const renderDays = () => {
+    const formatDate = (date: Date) => {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    };
+
+    const renderMonthView = () => {
         const days = [];
         const numDays = daysInMonth(currentMonth);
         const firstDay = firstDayOfMonth(currentMonth);
@@ -709,12 +714,17 @@ export const ScheduleCalendar: React.FC<{ todos: Todo[], getCategoryName: (id?: 
         }
 
         for (let day = 1; day <= numDays; day++) {
-            const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const dateObj = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+            const dateStr = formatDate(dateObj);
             const dayTodos = todos.filter(t => t.dueDate === dateStr);
+            const isToday = formatDate(new Date()) === dateStr;
             
             days.push(
-                <div key={day} className="bg-white h-32 border border-gray-100 p-2 flex flex-col overflow-hidden group hover:bg-gray-50 transition-colors">
-                    <span className="text-xs font-black jetbrains text-gray-400 mb-1">{String(day).padStart(2, '0')}</span>
+                <div key={day} className={`bg-white h-32 border border-gray-100 p-2 flex flex-col overflow-hidden group hover:bg-gray-50 transition-colors ${isToday ? 'ring-1 ring-inset ring-[#0098dc]' : ''}`}>
+                    <span className={`text-xs font-black jetbrains mb-1 ${isToday ? 'text-[#0098dc]' : 'text-gray-400'}`}>
+                        {String(day).padStart(2, '0')}
+                        {isToday && <span className="ml-1 text-[8px] uppercase tracking-tighter">Current</span>}
+                    </span>
                     <div className="flex-1 overflow-y-auto space-y-1 scrollbar-hide">
                         {dayTodos.map(todo => (
                             <div key={todo.id} className={`text-[8px] font-bold p-1 border-l-2 truncate ${todo.completed ? 'bg-gray-50 border-gray-300 text-gray-400 opacity-60' : 'bg-blue-50 border-blue-400 text-blue-700'}`}>
@@ -725,32 +735,239 @@ export const ScheduleCalendar: React.FC<{ todos: Todo[], getCategoryName: (id?: 
                 </div>
             );
         }
-        return days;
+        return (
+            <div className="grid grid-cols-7 border-t border-gray-100">
+                {days}
+            </div>
+        );
+    };
+
+    const renderThreeDayView = () => {
+        const today = new Date();
+        const days = [0, 1, 2].map(offset => {
+            const d = new Date(today);
+            d.setDate(today.getDate() + offset);
+            return d;
+        });
+
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-3 divide-x divide-gray-200 border-t border-gray-100 min-h-[400px]">
+                {days.map((date, idx) => {
+                    const dateStr = formatDate(date);
+                    const dayTodos = todos.filter(t => t.dueDate === dateStr);
+                    const labels = ["今日作战", "明日预期", "后续展望"];
+                    
+                    return (
+                        <div key={idx} className="bg-white p-6 flex flex-col space-y-4">
+                            <div className="flex items-end justify-between border-b-2 border-[#313131] pb-2">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black text-gray-400 tracking-widest uppercase">{labels[idx]}</span>
+                                    <span className="text-2xl font-black jetbrains italic leading-none mt-1">
+                                        {String(date.getMonth() + 1).padStart(2, '0')}.{String(date.getDate()).padStart(2, '0')}
+                                    </span>
+                                </div>
+                                <span className="text-[10px] font-black text-[#313131] opacity-30 jetbrains uppercase">0{idx + 1}</span>
+                            </div>
+                            
+                            <div className="flex-1 space-y-2 overflow-y-auto pr-2">
+                                {dayTodos.length > 0 ? (
+                                    dayTodos.map(todo => (
+                                        <div key={todo.id} className={`group flex items-center p-3 border border-gray-100 transition-all hover:translate-x-1 ${todo.completed ? 'opacity-50' : 'hover:border-blue-200 bg-gray-50/50'}`}>
+                                            <div className={`w-1 h-8 mr-4 ${todo.priority === 'URGENT' ? 'bg-[#ffcf00]' : 'bg-gray-300'}`}></div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-xs font-bold text-[#313131] truncate">{todo.text}</div>
+                                                <div className="text-[8px] font-black text-gray-400 tracking-tighter jetbrains mt-0.5">ID: {todo.id.slice(0,6)}</div>
+                                            </div>
+                                            {todo.completed && (
+                                                <div className="text-[8px] font-black text-blue-500 uppercase px-1 bg-blue-50">Done</div>
+                                            )}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="h-full flex flex-col items-center justify-center opacity-20 py-10">
+                                        <Icons.Task />
+                                        <span className="text-[10px] font-black tracking-widest uppercase mt-4">无部署计划</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        );
     };
 
     return (
         <div className="bg-white border border-gray-200 shadow-sm overflow-hidden">
-            <div className="bg-[#2d2d2d] text-white p-4 flex items-center justify-between border-b border-gray-700">
-                <div className="flex flex-col">
-                    <span className="text-xl font-black jetbrains italic tracking-tighter">
-                        {currentMonth.getFullYear()}.{String(currentMonth.getMonth() + 1).padStart(2, '0')}
-                    </span>
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">任务时间轴控制</span>
+            <div className="bg-[#2d2d2d] text-white p-4 flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-700 space-y-4 sm:space-y-0">
+                <div className="flex items-center space-x-6">
+                    <div className="flex flex-col">
+                        <span className="text-xl font-black jetbrains italic tracking-tighter">
+                            {viewMode === 'MONTH' 
+                                ? `${currentMonth.getFullYear()}.${String(currentMonth.getMonth() + 1).padStart(2, '0')}`
+                                : 'TACTICAL TIMELINE'
+                            }
+                        </span>
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">任务时间轴控制</span>
+                    </div>
+                    
+                    {/* View Switcher */}
+                    <div className="flex bg-black/40 p-1 rounded-sm border border-white/5">
+                        <button 
+                            onClick={() => setViewMode('THREE_DAY')}
+                            className={`px-4 py-1.5 text-[9px] font-black tracking-widest transition-all ${viewMode === 'THREE_DAY' ? 'bg-white text-black' : 'text-gray-400 hover:text-white'}`}
+                        >
+                            三日视图
+                        </button>
+                        <button 
+                            onClick={() => setViewMode('MONTH')}
+                            className={`px-4 py-1.5 text-[9px] font-black tracking-widest transition-all ${viewMode === 'MONTH' ? 'bg-white text-black' : 'text-gray-400 hover:text-white'}`}
+                        >
+                            月视图
+                        </button>
+                    </div>
                 </div>
-                <div className="flex space-x-2">
-                    <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className="p-2 hover:bg-white/10 transition-colors">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
+
+                {viewMode === 'MONTH' && (
+                    <div className="flex space-x-2">
+                        <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className="p-2 hover:bg-white/10 transition-colors border border-white/5 bg-white/5">
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
+                        </button>
+                        <button onClick={() => setCurrentMonth(new Date())} className="px-4 py-2 text-[10px] font-black tracking-widest hover:bg-white/10 transition-colors border border-white/5 bg-white/5">今日</button>
+                        <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className="p-2 hover:bg-white/10 transition-colors border border-white/5 bg-white/5">
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            {viewMode === 'MONTH' && (
+                <div className="grid grid-cols-7 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center py-2 bg-gray-50 border-b border-gray-200">
+                    {['日', '一', '二', '三', '四', '五', '六'].map(d => <div key={d}>{d}</div>)}
+                </div>
+            )}
+
+            {viewMode === 'MONTH' ? renderMonthView() : renderThreeDayView()}
+            
+            <div className="bg-gray-50 px-4 py-2 flex items-center justify-between border-t border-gray-100">
+                <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-1">
+                        <div className="w-2 h-2 bg-blue-400"></div>
+                        <span className="text-[8px] font-black text-gray-400 tracking-tighter uppercase">部署中</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                        <div className="w-2 h-2 bg-gray-300"></div>
+                        <span className="text-[8px] font-black text-gray-400 tracking-tighter uppercase">已完成</span>
+                    </div>
+                </div>
+                <span className="text-[8px] font-black text-gray-400 jetbrains opacity-50 uppercase tracking-tighter">Rhodes Island Terminal Schedule Management System</span>
+            </div>
+        </div>
+    );
+};
+
+export const SystemSettings: React.FC<{
+    isBgmEnabled: boolean;
+    onToggleBgm: (enabled: boolean) => void;
+    onImportMusic: (file: File) => void;
+    currentMusicName?: string;
+    onDelayTasks: (days: number) => void;
+}> = ({ isBgmEnabled, onToggleBgm, onImportMusic, currentMusicName, onDelayTasks }) => {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [delayDays, setDelayDays] = useState(1);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            onImportMusic(file);
+        }
+    };
+
+    return (
+        <div className="bg-white border border-gray-200 p-8 shadow-sm relative overflow-hidden mb-10 group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-mesh pointer-events-none opacity-10"></div>
+            <h3 className="text-[10px] font-black text-gray-400 tracking-widest italic mb-6 uppercase">系统配置 / SYSTEM CONFIGURATION</h3>
+            
+            <div className="space-y-8">
+                {/* Task Delay Setting - Moved to top as per request */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 pb-4 space-y-4 md:space-y-0">
+                    <div className="flex flex-col">
+                        <span className="text-xs font-bold text-[#313131] uppercase tracking-[0.2em]">战术顺延计划</span>
+                        <span className="text-[9px] font-black text-gray-400 mt-1 uppercase">TACTICAL POSTPONEMENT SYSTEM</span>
+                    </div>
+                    
+                    <div className="flex items-center space-x-4">
+                        <div className="flex items-center border border-gray-200 bg-gray-50 overflow-hidden">
+                             <button onClick={() => setDelayDays(Math.max(1, delayDays - 1))} className="px-3 py-1 hover:bg-gray-200 text-sm font-black">-</button>
+                             <input 
+                                type="number" 
+                                value={delayDays}
+                                onChange={(e) => setDelayDays(parseInt(e.target.value) || 1)}
+                                className="w-12 text-center bg-transparent text-sm font-black jetbrains outline-none"
+                             />
+                             <button onClick={() => setDelayDays(delayDays + 1)} className="px-3 py-1 hover:bg-gray-200 text-sm font-black">+</button>
+                             <span className="px-3 text-[10px] font-black text-gray-400 uppercase border-l border-gray-200">Days</span>
+                        </div>
+                        <button 
+                            onClick={() => onDelayTasks(delayDays)}
+                            className="bg-[#313131] text-white px-6 py-2 text-[10px] font-black tracking-widest hover:bg-[#0098dc] transition-all border-r-4 border-[#ffcf00] shadow-lg active:scale-95"
+                        >
+                            执行顺延
+                        </button>
+                    </div>
+                </div>
+
+                {/* BGM Toggle */}
+                <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                    <div className="flex flex-col">
+                        <div className="flex items-center space-x-2">
+                            <Icons.Music />
+                            <span className="text-xs font-bold text-[#313131] uppercase tracking-[0.2em]">终端背景音频</span>
+                        </div>
+                        <span className="text-[9px] font-black text-gray-400 mt-1 uppercase">BGM ACTIVATION STATE</span>
+                    </div>
+                    <button 
+                        onClick={() => onToggleBgm(!isBgmEnabled)}
+                        className={`relative w-16 h-8 transition-colors duration-300 ${isBgmEnabled ? 'bg-[#0098dc]' : 'bg-gray-200'}`}
+                    >
+                        <div className={`absolute top-1 left-1 w-6 h-6 bg-white transition-transform duration-300 shadow-sm ${isBgmEnabled ? 'translate-x-8' : 'translate-x-0'}`}></div>
+                        <div className="absolute inset-0 flex items-center justify-between px-2 pointer-events-none">
+                            <span className={`text-[8px] font-black ${isBgmEnabled ? 'text-white' : 'text-transparent'}`}>ON</span>
+                            <span className={`text-[8px] font-black ${!isBgmEnabled ? 'text-gray-400' : 'text-transparent'}`}>OFF</span>
+                        </div>
                     </button>
-                    <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className="p-2 hover:bg-white/10 transition-colors">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
-                    </button>
+                </div>
+
+                {/* Music Import */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
+                    <div className="flex flex-col">
+                        <span className="text-xs font-bold text-[#313131] uppercase tracking-[0.2em]">音频源文件导入</span>
+                        <div className="flex items-center mt-1 space-x-2">
+                             <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">Current: </span>
+                             <span className="text-[9px] font-bold text-[#0098dc] jetbrains truncate max-w-[150px]">{currentMusicName || 'Rhodes_Island_Theme.mp3'}</span>
+                        </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                        <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            onChange={handleFileChange} 
+                            accept="audio/*" 
+                            className="hidden" 
+                        />
+                        <button 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="bg-[#2d2d2d] text-white px-6 py-2 text-[10px] font-black tracking-widest hover:bg-black transition-all border-r-4 border-gray-500 shadow-lg active:scale-95"
+                        >
+                            导入作战音乐
+                        </button>
+                    </div>
                 </div>
             </div>
-            <div className="grid grid-cols-7 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center py-2 bg-gray-50 border-b border-gray-200">
-                {['日', '一', '二', '三', '四', '五', '六'].map(d => <div key={d}>{d}</div>)}
-            </div>
-            <div className="grid grid-cols-7 border-t border-gray-100">
-                {renderDays()}
+
+            <div className="absolute bottom-0 right-0 w-24 h-1 bg-gray-100 flex">
+                <div className={`h-full bg-[#0098dc] transition-all duration-500 ${isBgmEnabled ? 'w-full' : 'w-0'}`}></div>
             </div>
         </div>
     );

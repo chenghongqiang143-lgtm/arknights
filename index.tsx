@@ -1,9 +1,9 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { TabType, TimeFilterType, Todo, Category, Subtask, TaskTemplate } from './types';
 import { Layout } from './components/Layout';
-import { SettingHeader, TaskRow, TaskInput, CategoryManager, TemplateRow, TemplateInput, StatisticsDashboard, ScheduleCalendar, StrategicModal, TaskEditForm } from './components/Controls';
+import { SettingHeader, TaskRow, TaskInput, CategoryManager, TemplateRow, TemplateInput, StatisticsDashboard, ScheduleCalendar, StrategicModal, TaskEditForm, SystemSettings } from './components/Controls';
 import { Icons } from './constants';
 
 const App = () => {
@@ -19,6 +19,12 @@ const App = () => {
     const [isEditingName, setIsEditingName] = useState(false);
     const [tempName, setTempName] = useState('');
     
+    // Music State
+    const [isBgmEnabled, setIsBgmEnabled] = useState(false);
+    const [bgmSource, setBgmSource] = useState<string | null>(null);
+    const [bgmName, setBgmName] = useState<string>('');
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
@@ -28,6 +34,7 @@ const App = () => {
         const savedCats = localStorage.getItem('ri_categories');
         const savedTemplates = localStorage.getItem('ri_templates');
         const savedName = localStorage.getItem('ri_user_name');
+        const savedBgmEnabled = localStorage.getItem('ri_bgm_enabled');
         
         if (savedTasks) setTodos(JSON.parse(savedTasks) as Todo[]);
         else setTodos([
@@ -50,7 +57,39 @@ const App = () => {
         ]);
 
         if (savedName) setUserName(savedName);
+        if (savedBgmEnabled) setIsBgmEnabled(JSON.parse(savedBgmEnabled));
+
+        // Create Audio Object
+        audioRef.current = new Audio();
+        audioRef.current.loop = true;
+        audioRef.current.volume = 0.4;
+
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
+        };
     }, []);
+
+    // Sync BGM with state
+    useEffect(() => {
+        if (!audioRef.current) return;
+        
+        if (isBgmEnabled && bgmSource) {
+            if (audioRef.current.src !== bgmSource) {
+                audioRef.current.src = bgmSource;
+            }
+            audioRef.current.play().catch(err => {
+                console.warn("Autoplay blocked or audio error:", err);
+                setIsBgmEnabled(false);
+            });
+        } else {
+            audioRef.current.pause();
+        }
+        
+        localStorage.setItem('ri_bgm_enabled', JSON.stringify(isBgmEnabled));
+    }, [isBgmEnabled, bgmSource]);
 
     useEffect(() => {
         localStorage.setItem('ri_tasks', JSON.stringify(todos));
@@ -58,6 +97,24 @@ const App = () => {
         localStorage.setItem('ri_templates', JSON.stringify(templates));
         localStorage.setItem('ri_user_name', userName);
     }, [todos, categories, templates, userName]);
+
+    const handleImportMusic = (file: File) => {
+        const url = URL.createObjectURL(file);
+        setBgmSource(url);
+        setBgmName(file.name);
+        setIsBgmEnabled(true);
+    };
+
+    const handleDelayTasks = (days: number) => {
+        setTodos(prev => prev.map(todo => {
+            if (!todo.completed && todo.dueDate) {
+                const date = new Date(todo.dueDate);
+                date.setDate(date.getDate() + days);
+                return { ...todo, dueDate: date.toISOString().split('T')[0] };
+            }
+            return todo;
+        }));
+    };
 
     const addTask = (text: string, priority: Todo['priority'], categoryId?: string, dueDate?: string, subtasks: string[] = []) => {
         const newTodo: Todo = {
@@ -449,8 +506,18 @@ const App = () => {
                                 <p className="text-gray-400 font-bold jetbrains tracking-widest text-[0.6rem]">ID: 00000001 | 罗德岛战略终端</p>
                             </div>
                         </div>
-                        <SettingHeader title="管理" />
+
+                        <SettingHeader title="数据管理" />
                         <CategoryManager categories={categories} onAdd={addCategory} onEdit={editCategory} onDelete={deleteCategory} />
+
+                        <SettingHeader title="系统设置" />
+                        <SystemSettings 
+                            isBgmEnabled={isBgmEnabled} 
+                            onToggleBgm={setIsBgmEnabled} 
+                            onImportMusic={handleImportMusic} 
+                            currentMusicName={bgmName}
+                            onDelayTasks={handleDelayTasks}
+                        />
                     </div>
                 )}
             </Layout>

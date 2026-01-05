@@ -10,7 +10,6 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => {
-    // Force expanded in landscape on wider screens, collapse only when truly narrow
     const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < 1024);
     const [currentDate, setCurrentDate] = useState('');
 
@@ -34,9 +33,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
     const sidebarWidth = isCollapsed ? 'w-[5rem]' : 'w-[15rem]';
 
     return (
-        <div className="flex h-screen w-full bg-[#f2f2f2] overflow-hidden select-none">
+        <div className="flex h-screen w-full bg-[#f4f4f4] overflow-hidden select-none">
             {/* Sidebar with Gaussian Blur and Safe Area Support */}
-            <aside className={`${sidebarWidth} pt-[env(safe-area-inset-top)] bg-[#444444]/85 backdrop-blur-xl flex flex-col shrink-0 border-r border-white/10 z-40 shadow-2xl transition-all duration-300 relative`}>
+            <aside className={`${sidebarWidth} pt-[env(safe-area-inset-top)] bg-[#313131]/90 backdrop-blur-xl flex flex-col shrink-0 border-r border-white/5 z-40 shadow-2xl transition-all duration-300 relative`}>
                 <button 
                     onClick={() => setIsCollapsed(!isCollapsed)}
                     className="absolute -right-[0.75rem] top-[calc(6rem+env(safe-area-inset-top))] w-6 h-6 bg-[#2d2d2d] text-white flex items-center justify-center rounded-full border border-gray-600 z-50 hover:bg-black transition-colors"
@@ -100,6 +99,26 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
 
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col relative min-w-0">
+                {/* Background Watermarks */}
+                <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
+                    {/* Centered Text Watermark */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.015] -rotate-12">
+                        <div className="text-[18rem] font-black italic whitespace-nowrap uppercase">Rhodes Island</div>
+                    </div>
+                    
+                    {/* Bottom-Left Logo Decoration */}
+                    <div className="absolute -bottom-16 -left-16 text-[#313131] opacity-[0.035] scale-[2.5] origin-bottom-left rotate-12">
+                        <Icons.RhodesLogo className="w-64 h-64" />
+                    </div>
+
+                    {/* Corner Detail Decoration */}
+                    <div className="absolute bottom-10 right-10 flex flex-col items-end opacity-[0.05]">
+                        <div className="text-[4rem] font-black jetbrains leading-none">01</div>
+                        <div className="h-1 w-24 bg-[#313131] mt-2"></div>
+                        <div className="text-[0.6rem] font-black tracking-widest mt-1">SECTOR ARCHIVE / L-BASE</div>
+                    </div>
+                </div>
+
                 {/* Header with Safe Area Support */}
                 <header className="min-h-[5rem] pt-[env(safe-area-inset-top)] bg-white/95 backdrop-blur-md flex items-center justify-between border-b border-gray-200 z-30 shadow-sm box-content">
                     <div className="flex h-[5rem] items-center">
@@ -123,12 +142,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                     </div>
                 </header>
 
-                <div className="flex-1 overflow-y-auto relative px-4 sm:px-12 py-10">
-                    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.02] pointer-events-none -rotate-12 select-none">
-                        <div className="text-[15rem] font-black italic whitespace-nowrap uppercase">Rhodes Island</div>
-                    </div>
-                    
-                    <div className="relative z-10 max-w-6xl mx-auto">
+                <div className="flex-1 overflow-y-auto relative px-4 sm:px-12 py-10 z-10">
+                    <div className="relative max-w-6xl mx-auto">
                         {children}
                     </div>
                 </div>
