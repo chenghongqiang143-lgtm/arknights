@@ -35,7 +35,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
     return (
         <div className="flex h-screen w-full bg-[#f4f4f4] overflow-hidden select-none">
             {/* Sidebar with Gaussian Blur and Safe Area Support */}
-            <aside className={`${sidebarWidth} pt-[env(safe-area-inset-top)] bg-[#313131]/90 backdrop-blur-xl flex flex-col shrink-0 border-r border-white/5 z-40 shadow-2xl transition-all duration-300 relative`}>
+            <aside className={`${sidebarWidth} pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] box-content bg-[#313131]/90 backdrop-blur-xl flex flex-col shrink-0 border-r border-white/5 z-40 shadow-2xl transition-all duration-300 relative`}>
                 <button 
                     onClick={() => setIsCollapsed(!isCollapsed)}
                     className="absolute -right-[0.75rem] top-[calc(6rem+env(safe-area-inset-top))] w-6 h-6 bg-[#2d2d2d] text-white flex items-center justify-center rounded-full border border-gray-600 z-50 hover:bg-black transition-colors"
@@ -120,7 +120,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                 </div>
 
                 {/* Header with Safe Area Support */}
-                <header className="min-h-[5rem] pt-[env(safe-area-inset-top)] bg-white/95 backdrop-blur-md flex items-center justify-between border-b border-gray-200 z-30 shadow-sm box-content">
+                <header className="min-h-[5rem] pt-[env(safe-area-inset-top)] pl-8 pr-[calc(2rem+env(safe-area-inset-right))] bg-white/95 backdrop-blur-md flex items-center justify-between border-b border-gray-200 z-30 shadow-sm box-content">
                     <div className="flex h-[5rem] items-center">
                         <div className="flex items-center bg-[#2d2d2d] text-white h-full px-8 space-x-4 relative">
                             <div className="w-5 h-5 flex items-center justify-center">
@@ -131,7 +131,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                         </div>
                     </div>
 
-                    <div className="px-8 flex items-center space-x-6 h-[5rem]">
+                    <div className="flex items-center space-x-6 h-[5rem]">
                         <div className="text-right hidden sm:block">
                             <div className="text-[0.6rem] font-black tracking-tighter text-gray-400 leading-none">RHODES ISLAND</div>
                             <div className="text-[0.6rem] font-black tracking-tighter text-gray-400 leading-none">PRTS V2.0.5</div>
@@ -142,7 +142,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                     </div>
                 </header>
 
-                <div className="flex-1 overflow-y-auto relative px-4 sm:px-12 py-10 z-10">
+                <div className="flex-1 overflow-y-auto relative pl-4 pr-[calc(1rem+env(safe-area-inset-right))] sm:pl-12 sm:pr-[calc(3rem+env(safe-area-inset-right))] py-10 z-10">
                     <div className="relative max-w-6xl mx-auto">
                         {children}
                     </div>
