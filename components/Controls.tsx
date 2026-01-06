@@ -78,6 +78,7 @@ interface TaskRowProps {
 
 export const TaskRow: React.FC<TaskRowProps> = ({ todo, categoryName, onToggle, onDelete, onToggleSubtask, onAddSubtask, onEdit }) => {
     const [newSubtask, setNewSubtask] = useState('');
+    const [isExpanded, setIsExpanded] = useState(true);
     const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const priorityColors = {
         NORMAL: 'bg-gray-400',
@@ -120,7 +121,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({ todo, categoryName, onToggle, 
                 <div className={`w-1.5 h-16 ${priorityColors[todo.priority]} shrink-0 shadow-[2px_0_5px_rgba(0,0,0,0.1)]`}></div>
                 
                 <div className="flex-1 min-h-[64px] bg-white px-6 py-2 flex items-center justify-between relative overflow-hidden">
-                    <div className="flex flex-col min-w-0">
+                    <div className="flex flex-col min-w-0 flex-1">
                         <div className="flex items-center space-x-2">
                              {todo.priority === 'URGENT' && (
                                 <span className="text-[10px] font-black px-1.5 py-0.5 bg-[#ffcf00] text-[#313131] tracking-widest">
@@ -132,7 +133,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({ todo, categoryName, onToggle, 
                             </span>
                         </div>
                         
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 pr-2">
                             {categoryName && (
                                 <span className="text-[9px] font-black px-1.5 bg-[#313131] text-white tracking-[0.15em] whitespace-nowrap">
                                     {categoryName}
@@ -155,10 +156,19 @@ export const TaskRow: React.FC<TaskRowProps> = ({ todo, categoryName, onToggle, 
                                 <span className="w-1 h-1 bg-gray-300 rounded-full mr-2"></span>
                                 <span>风险: {priorityLabels[todo.priority]}</span>
                             </span>
+
+                            <button 
+                                onPointerDown={(e) => e.stopPropagation()}
+                                onClick={() => setIsExpanded(!isExpanded)}
+                                className="ml-auto flex items-center space-x-1 text-[9px] font-black text-gray-400 hover:text-[#0098dc] transition-colors uppercase tracking-widest px-2 py-0.5 rounded-sm hover:bg-gray-100"
+                            >
+                                <span>{isExpanded ? 'Hide' : 'Show'}</span>
+                                {isExpanded ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
+                            </button>
                         </div>
                     </div>
                     
-                    <div className="flex items-center space-x-3 opacity-0 group-hover:opacity-100 transition-opacity ml-4 shrink-0">
+                    <div className="flex items-center space-x-3 opacity-0 group-hover:opacity-100 transition-opacity ml-2 shrink-0">
                         <button 
                             onPointerDown={(e) => e.stopPropagation()}
                             onClick={() => onToggle(todo.id)}
@@ -181,36 +191,38 @@ export const TaskRow: React.FC<TaskRowProps> = ({ todo, categoryName, onToggle, 
                 </div>
             </div>
 
-            <div className="ml-1.5 pl-6 mt-1 space-y-1">
-                {todo.subtasks.map(sub => (
-                    <div key={sub.id} className="flex items-center group/sub bg-white/40 hover:bg-white/60 px-3 py-1 transition-colors border-l-2 border-gray-200">
-                        <button 
-                            onClick={() => onToggleSubtask(todo.id, sub.id)}
-                            className={`w-3.5 h-3.5 border flex items-center justify-center mr-3 transition-colors ${sub.completed ? 'bg-black border-black text-white' : 'border-gray-400 text-transparent'}`}
-                        >
-                            <svg className="w-2.5 h-2.5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                        </button>
-                        <span className={`text-xs font-bold tracking-tight ${sub.completed ? 'line-through text-gray-400' : 'text-gray-600'}`}>
-                            {sub.text}
-                        </span>
-                    </div>
-                ))}
-                {!todo.completed && (
-                    <div className="flex items-center pl-3 py-1 border-l-2 border-dashed border-gray-200">
-                        <span className="text-gray-300 mr-2 text-xs">+</span>
-                        <input 
-                            type="text" 
-                            placeholder="添加子任务..." 
-                            value={newSubtask}
-                            onChange={(e) => setNewSubtask(e.target.value)}
-                            onKeyDown={handleAddSub}
-                            className="bg-transparent border-none focus:outline-none text-xs font-bold text-gray-400 placeholder:text-gray-200 w-full"
-                        />
-                    </div>
-                )}
-            </div>
+            {isExpanded && (
+                <div className="ml-1.5 pl-6 mt-1 space-y-1 animate-in slide-in-from-top-2 fade-in duration-200">
+                    {todo.subtasks.map(sub => (
+                        <div key={sub.id} className="flex items-center group/sub bg-white/40 hover:bg-white/60 px-3 py-1 transition-colors border-l-2 border-gray-200">
+                            <button 
+                                onClick={() => onToggleSubtask(todo.id, sub.id)}
+                                className={`w-3.5 h-3.5 border flex items-center justify-center mr-3 transition-colors ${sub.completed ? 'bg-black border-black text-white' : 'border-gray-400 text-transparent'}`}
+                            >
+                                <svg className="w-2.5 h-2.5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                            </button>
+                            <span className={`text-xs font-bold tracking-tight ${sub.completed ? 'line-through text-gray-400' : 'text-gray-600'}`}>
+                                {sub.text}
+                            </span>
+                        </div>
+                    ))}
+                    {!todo.completed && (
+                        <div className="flex items-center pl-3 py-1 border-l-2 border-dashed border-gray-200">
+                            <span className="text-gray-300 mr-2 text-xs">+</span>
+                            <input 
+                                type="text" 
+                                placeholder="添加子任务..." 
+                                value={newSubtask}
+                                onChange={(e) => setNewSubtask(e.target.value)}
+                                onKeyDown={handleAddSub}
+                                className="bg-transparent border-none focus:outline-none text-xs font-bold text-gray-400 placeholder:text-gray-200 w-full"
+                            />
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
@@ -517,10 +529,19 @@ export const TaskEditForm: React.FC<{
     const [priority, setPriority] = useState<Todo['priority']>(todo.priority);
     const [categoryId, setCategoryId] = useState<string | undefined>(todo.categoryId);
     const [dueDate, setDueDate] = useState(todo.dueDate || '');
+    const [subtasks, setSubtasks] = useState<Subtask[]>(todo.subtasks || []);
+    const [newSubInput, setNewSubInput] = useState('');
 
     const handleSave = () => {
         if (!text.trim()) return;
-        onSave(todo.id, { text, priority, categoryId, dueDate });
+        onSave(todo.id, { text, priority, categoryId, dueDate, subtasks });
+    };
+
+    const addSub = () => {
+        if (newSubInput.trim()) {
+            setSubtasks([...subtasks, { id: 'sub_' + Date.now(), text: newSubInput.trim(), completed: false }]);
+            setNewSubInput('');
+        }
     };
 
     return (
@@ -569,6 +590,37 @@ export const TaskEditForm: React.FC<{
                     onChange={(e) => setDueDate(e.target.value)}
                     className="w-full bg-white border-b-2 border-gray-200 focus:border-[#313131] outline-none py-2 text-sm font-bold jetbrains"
                 />
+            </div>
+            <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">子任务管理</label>
+                <div className="space-y-2">
+                    {subtasks.map((sub, idx) => (
+                        <div key={sub.id} className="flex items-center space-x-2">
+                            <input 
+                                value={sub.text}
+                                onChange={(e) => {
+                                    const newSubs = [...subtasks];
+                                    newSubs[idx] = { ...sub, text: e.target.value };
+                                    setSubtasks(newSubs);
+                                }}
+                                className="flex-1 bg-gray-50 border-b border-gray-200 text-sm font-bold py-1 px-2 focus:border-[#313131] outline-none"
+                            />
+                            <button onClick={() => setSubtasks(subtasks.filter(s => s.id !== sub.id))} className="text-gray-400 hover:text-red-500">
+                                <Icons.Close />
+                            </button>
+                        </div>
+                    ))}
+                    <div className="flex space-x-2 mt-2">
+                        <input 
+                            value={newSubInput}
+                            onChange={(e) => setNewSubInput(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && addSub()}
+                            placeholder="新增子任务..."
+                            className="flex-1 bg-white border-b-2 border-gray-200 focus:border-[#313131] outline-none py-1 text-sm font-bold"
+                        />
+                         <button onClick={addSub} className="px-4 py-1 bg-gray-100 hover:bg-gray-200 text-xs font-bold transition-colors">添加</button>
+                    </div>
+                </div>
             </div>
             <div className="flex space-x-4">
                 <button onClick={onCancel} className="flex-1 bg-white text-[#313131] border border-[#313131] py-4 font-black tracking-[0.3em] hover:bg-gray-100 transition-all">

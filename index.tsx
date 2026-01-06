@@ -6,7 +6,87 @@ import { Layout } from './components/Layout';
 import { SettingHeader, TaskRow, TaskInput, CategoryManager, TemplateRow, TemplateInput, StatisticsDashboard, ScheduleCalendar, StrategicModal, TaskEditForm, SystemSettings } from './components/Controls';
 import { Icons } from './constants';
 
+// --- Loading Component ---
+interface LoadingScreenProps {
+    progress: number;
+    logs: string[];
+    error: string | null;
+    onRetry: () => void;
+}
+
+const LoadingScreen: React.FC<LoadingScreenProps> = ({ progress, logs, error, onRetry }) => {
+    return (
+        <div className="fixed inset-0 bg-black z-[9999] flex flex-col items-center justify-center text-white overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gray-900 to-black opacity-80"></div>
+            
+            {/* Hexagon Decoration */}
+            <div className="relative w-32 h-32 mb-12 animate-pulse">
+                <div className="absolute inset-0 border-2 border-[#0098dc] loading-hexagon opacity-50 scale-110"></div>
+                <div className="absolute inset-0 border border-white loading-hexagon flex items-center justify-center bg-white/5 backdrop-blur-sm">
+                    <Icons.RhodesLogo className="w-16 h-16 text-white" />
+                </div>
+            </div>
+
+            {/* Error State */}
+            {error ? (
+                <div className="z-10 flex flex-col items-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="text-[#ffcf00] text-xl font-black tracking-widest uppercase border-b-2 border-[#ffcf00] pb-2 mb-2">
+                        Connection Timed Out
+                    </div>
+                    <div className="text-gray-400 text-xs jetbrains max-w-md text-center">
+                        PRTS failed to synchronize with the neural network. 
+                        Error Code: {error}
+                    </div>
+                    <button 
+                        onClick={onRetry}
+                        className="px-8 py-3 bg-white text-black font-black tracking-[0.2em] hover:bg-[#0098dc] hover:text-white transition-all uppercase"
+                    >
+                        Reconnect
+                    </button>
+                </div>
+            ) : (
+                /* Loading State */
+                <div className="z-10 w-full max-w-md px-8 flex flex-col">
+                    <div className="flex justify-between items-end mb-2">
+                        <span className="text-2xl font-black italic tracking-tighter">PRTS <span className="text-[#0098dc] text-sm font-normal not-italic tracking-widest ml-2">SYSTEM BOOT</span></span>
+                        <span className="text-4xl font-black jetbrains text-[#0098dc] opacity-80">{progress}%</span>
+                    </div>
+                    
+                    {/* Progress Bar */}
+                    <div className="h-1 w-full bg-gray-800 relative overflow-hidden mb-6">
+                        <div 
+                            className="h-full bg-white transition-all duration-300 ease-out" 
+                            style={{ width: `${progress}%` }}
+                        ></div>
+                        <div className="absolute top-0 right-0 h-full w-20 bg-gradient-to-l from-[#0098dc] to-transparent opacity-50"></div>
+                    </div>
+
+                    {/* Terminal Logs */}
+                    <div className="h-24 overflow-hidden border-l-2 border-white/20 pl-4 flex flex-col justify-end">
+                        {logs.slice(-4).map((log, idx) => (
+                            <div key={idx} className="text-[10px] jetbrains text-gray-500 uppercase tracking-wide leading-relaxed animate-in slide-in-from-left-2 fade-in duration-300">
+                                <span className="text-[#0098dc] mr-2">>></span>{log}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+            
+            <div className="absolute bottom-8 left-8 text-[10px] text-gray-600 font-bold tracking-[0.3em] uppercase">
+                Rhodes Island Neural Network
+            </div>
+        </div>
+    );
+};
+
 const App = () => {
+    // --- App Loading State ---
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadProgress, setLoadProgress] = useState(0);
+    const [loadLogs, setLoadLogs] = useState<string[]>([]);
+    const [loadError, setLoadError] = useState<string | null>(null);
+
+    // --- Data State ---
     const [activeTab, setActiveTab] = useState<TabType>(TabType.TASK);
     const [todos, setTodos] = useState<Todo[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -28,41 +108,104 @@ const App = () => {
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
-    // Initialization
-    useEffect(() => {
-        const savedTasks = localStorage.getItem('ri_tasks');
-        const savedCats = localStorage.getItem('ri_categories');
-        const savedTemplates = localStorage.getItem('ri_templates');
-        const savedName = localStorage.getItem('ri_user_name');
-        const savedBgmEnabled = localStorage.getItem('ri_bgm_enabled');
+    // --- Loading Logic ---
+    const addLog = (msg: string) => setLoadLogs(prev => [...prev, msg]);
+
+    const initializeApp = async () => {
+        setLoadError(null);
+        setLoadProgress(0);
+        setLoadLogs(['Initializing PRTS Kernel...', 'Checking secure connection...']);
         
-        if (savedTasks) setTodos(JSON.parse(savedTasks) as Todo[]);
-        else setTodos([
-            { 
-                id: '1', text: '完成每日常规演习', completed: false, priority: 'NORMAL', categoryId: 'cat_1', timestamp: Date.now(),
-                subtasks: [{ id: 'sub1', text: '战术演习LS-5', completed: false }, { id: 'sub2', text: '资源保障SK-5', completed: true }]
-            },
-            { 
-                id: '2', text: '整合运动动态监控', completed: true, priority: 'URGENT', categoryId: 'cat_2', timestamp: Date.now() - 3600000 * 24 * 3,
-                subtasks: []
-            },
-        ]);
+        // Timeout Promise
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('TIMEOUT')), 8000)
+        );
 
-        if (savedCats) setCategories(JSON.parse(savedCats) as Category[]);
-        else setCategories([{ id: 'cat_1', name: '日常演习' }, { id: 'cat_2', name: '敌情监控' }, { id: 'cat_3', name: '资源筹备' }]);
+        const loadSequence = async () => {
+            // Stage 1: Environment Check
+            await new Promise(r => setTimeout(r, 600)); 
+            setLoadProgress(20);
+            addLog('Environment verification complete.');
+            
+            // Stage 2: Font & Resource Check
+            await document.fonts.ready;
+            setLoadProgress(45);
+            addLog('Visual interface resources loaded.');
+            await new Promise(r => setTimeout(r, 400)); 
 
-        if (savedTemplates) setTemplates(JSON.parse(savedTemplates) as TaskTemplate[]);
-        else setTemplates([
-            { id: 'tmp_1', text: '每周常规剿灭', priority: 'URGENT', categoryId: 'cat_1', subtasks: ['切尔诺伯格', '龙门外环', '龙门市区'] }
-        ]);
+            // Stage 3: Data Synchronization
+            setLoadProgress(60);
+            addLog('Synchronizing local database...');
+            
+            try {
+                const savedTasks = localStorage.getItem('ri_tasks');
+                const savedCats = localStorage.getItem('ri_categories');
+                const savedTemplates = localStorage.getItem('ri_templates');
+                const savedName = localStorage.getItem('ri_user_name');
+                const savedBgmEnabled = localStorage.getItem('ri_bgm_enabled');
+                
+                setLoadProgress(80);
+                addLog('Parsing user configuration...');
+                await new Promise(r => setTimeout(r, 300)); // Artificial delay for smoothness
 
-        if (savedName) setUserName(savedName);
-        if (savedBgmEnabled) setIsBgmEnabled(JSON.parse(savedBgmEnabled));
+                if (savedTasks) setTodos(JSON.parse(savedTasks) as Todo[]);
+                else setTodos([
+                    { 
+                        id: '1', text: '完成每日常规演习', completed: false, priority: 'NORMAL', categoryId: 'cat_1', timestamp: Date.now(),
+                        subtasks: [{ id: 'sub1', text: '战术演习LS-5', completed: false }, { id: 'sub2', text: '资源保障SK-5', completed: true }]
+                    },
+                    { 
+                        id: '2', text: '整合运动动态监控', completed: true, priority: 'URGENT', categoryId: 'cat_2', timestamp: Date.now() - 3600000 * 24 * 3,
+                        subtasks: []
+                    },
+                ]);
 
-        // Create Audio Object
-        audioRef.current = new Audio();
-        audioRef.current.loop = true;
-        audioRef.current.volume = 0.4;
+                if (savedCats) setCategories(JSON.parse(savedCats) as Category[]);
+                else setCategories([{ id: 'cat_1', name: '日常演习' }, { id: 'cat_2', name: '敌情监控' }, { id: 'cat_3', name: '资源筹备' }]);
+
+                if (savedTemplates) setTemplates(JSON.parse(savedTemplates) as TaskTemplate[]);
+                else setTemplates([
+                    { id: 'tmp_1', text: '每周常规剿灭', priority: 'URGENT', categoryId: 'cat_1', subtasks: ['切尔诺伯格', '龙门外环', '龙门市区'] }
+                ]);
+
+                if (savedName) setUserName(savedName);
+                if (savedBgmEnabled) setIsBgmEnabled(JSON.parse(savedBgmEnabled));
+
+            } catch (e) {
+                console.error("Data corruption detected, resetting defaults.");
+                addLog('WARNING: Local data corrupted. Resetting to factory defaults.');
+                // Fallbacks are already handled by the 'else' blocks above if parsing fails and variables remain default
+            }
+
+            // Stage 4: Audio System
+            setLoadProgress(90);
+            addLog('Initializing audio subsystems...');
+            audioRef.current = new Audio();
+            audioRef.current.loop = true;
+            audioRef.current.volume = 0.4;
+            
+            setLoadProgress(100);
+            addLog('PRTS Online. Welcome, Doctor.');
+            await new Promise(r => setTimeout(r, 500)); // Wait at 100% briefly
+        };
+
+        try {
+            await Promise.race([loadSequence(), timeoutPromise]);
+            setIsLoading(false);
+        } catch (error: any) {
+            if (error.message === 'TIMEOUT') {
+                setLoadError('TIMEOUT_0x00F1_NETWORK_LAG');
+                addLog('CRITICAL: Handshake timeout.');
+            } else {
+                setLoadError('UNKNOWN_0x0000');
+                addLog('CRITICAL: System failure.');
+            }
+        }
+    };
+
+    // Run on Mount
+    useEffect(() => {
+        initializeApp();
 
         return () => {
             if (audioRef.current) {
@@ -74,7 +217,7 @@ const App = () => {
 
     // Sync BGM with state
     useEffect(() => {
-        if (!audioRef.current) return;
+        if (isLoading || !audioRef.current) return; // Don't play during loading
         
         if (isBgmEnabled && bgmSource) {
             if (audioRef.current.src !== bgmSource) {
@@ -89,14 +232,15 @@ const App = () => {
         }
         
         localStorage.setItem('ri_bgm_enabled', JSON.stringify(isBgmEnabled));
-    }, [isBgmEnabled, bgmSource]);
+    }, [isBgmEnabled, bgmSource, isLoading]);
 
     useEffect(() => {
+        if (isLoading) return; // Don't save during loading phase (could overwrite with empty)
         localStorage.setItem('ri_tasks', JSON.stringify(todos));
         localStorage.setItem('ri_categories', JSON.stringify(categories));
         localStorage.setItem('ri_templates', JSON.stringify(templates));
         localStorage.setItem('ri_user_name', userName);
-    }, [todos, categories, templates, userName]);
+    }, [todos, categories, templates, userName, isLoading]);
 
     const handleImportMusic = (file: File) => {
         const url = URL.createObjectURL(file);
@@ -321,6 +465,11 @@ const App = () => {
         }
         setIsEditingName(false);
     };
+
+    // --- Render ---
+    if (isLoading) {
+        return <LoadingScreen progress={loadProgress} logs={loadLogs} error={loadError} onRetry={initializeApp} />;
+    }
 
     return (
         <>

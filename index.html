@@ -5,8 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Rhodes Island Terminal</title>
+    
+    <!-- Resource Optimization: Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://esm.sh">
+
+    <!-- Resource Optimization: Preload Critical Assets -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" as="style">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             /* Base scaling unit: 100vw / 120 means 1rem = 1/120th of a 1080p-ish width */
@@ -22,7 +32,7 @@
 
         body {
             font-family: 'Noto Sans SC', sans-serif;
-            background-color: #e6e6e6;
+            background-color: #000; /* Default to black for loading state */
             overflow: hidden;
             margin: 0;
             color: #313131;
@@ -64,6 +74,11 @@
             width: 100%;
             position: absolute;
             animation: scan 4s linear infinite;
+        }
+
+        /* Loading Screen Specifics */
+        .loading-hexagon {
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
         }
 
         /* Responsive scaling adjustments */
