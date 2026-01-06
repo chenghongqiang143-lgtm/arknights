@@ -98,6 +98,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                         collapsed={isCollapsed}
                     />
                     <SidebarTab 
+                        icon={<Icons.Store />} 
+                        label="采购" 
+                        active={activeTab === TabType.STORE} 
+                        onClick={() => onTabChange(TabType.STORE)} 
+                        collapsed={isCollapsed}
+                    />
+                    <SidebarTab 
                         icon={<Icons.Stats />} 
                         label="统计" 
                         active={activeTab === TabType.STATISTICS} 

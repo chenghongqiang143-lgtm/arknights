@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
-import { TabType, TimeFilterType, Todo, Category, Subtask, TaskTemplate } from './types';
+import { TabType, TimeFilterType, Todo, Category, Subtask, TaskTemplate, Achievement, StoreItem } from './types';
 import { Layout } from './components/Layout';
-import { SettingHeader, TaskRow, TaskInput, CategoryManager, TemplateRow, TemplateInput, StatisticsDashboard, ScheduleCalendar, StrategicModal, TaskEditForm, SystemSettings } from './components/Controls';
+import { SettingHeader, TaskRow, TaskInput, CategoryManager, TemplateRow, TemplateInput, StatisticsDashboard, ScheduleCalendar, StrategicModal, TaskEditForm, SystemSettings, StoreView } from './components/Controls';
 import { Icons } from './constants';
 
 // --- Loading Component ---
@@ -91,6 +91,9 @@ const App = () => {
     const [todos, setTodos] = useState<Todo[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [templates, setTemplates] = useState<TaskTemplate[]>([]);
+    const [achievements, setAchievements] = useState<Achievement[]>([]);
+    const [storeItems, setStoreItems] = useState<StoreItem[]>([]);
+    
     const [selectedTimeFilter, setSelectedTimeFilter] = useState<TimeFilterType>(TimeFilterType.ALL);
     const [selectedTemplateCategory, setSelectedTemplateCategory] = useState<string>('ALL');
     const [editingTemplate, setEditingTemplate] = useState<TaskTemplate | null>(null);
@@ -98,6 +101,10 @@ const App = () => {
     const [userName, setUserName] = useState<string>('Doctor');
     const [isEditingName, setIsEditingName] = useState(false);
     const [tempName, setTempName] = useState('');
+    
+    // Points State
+    const [userPoints, setUserPoints] = useState<number>(0);
+    const [totalEarnedPoints, setTotalEarnedPoints] = useState<number>(0); // New state for lifetime points
     
     // Music State
     const [isBgmEnabled, setIsBgmEnabled] = useState(false);
@@ -141,24 +148,32 @@ const App = () => {
                 const savedTasks = localStorage.getItem('ri_tasks');
                 const savedCats = localStorage.getItem('ri_categories');
                 const savedTemplates = localStorage.getItem('ri_templates');
+                const savedAchievements = localStorage.getItem('ri_achievements');
+                const savedStoreItems = localStorage.getItem('ri_store_items');
                 const savedName = localStorage.getItem('ri_user_name');
                 const savedBgmEnabled = localStorage.getItem('ri_bgm_enabled');
                 const savedBgmSource = localStorage.getItem('ri_bgm_source');
                 const savedBgmName = localStorage.getItem('ri_bgm_name');
+                const savedPoints = localStorage.getItem('ri_user_points');
+                const savedTotalPoints = localStorage.getItem('ri_total_earned_points');
                 
                 setLoadProgress(80);
                 addLog('Parsing user configuration...');
-                await new Promise(r => setTimeout(r, 300)); // Artificial delay for smoothness
+                await new Promise(r => setTimeout(r, 300)); 
 
                 if (savedTasks) setTodos(JSON.parse(savedTasks) as Todo[]);
                 else setTodos([
                     { 
                         id: '1', text: '完成每日常规演习', completed: false, priority: 'NORMAL', categoryId: 'cat_1', timestamp: Date.now(),
-                        subtasks: [{ id: 'sub1', text: '战术演习LS-5', completed: false }, { id: 'sub2', text: '资源保障SK-5', completed: true }]
+                        subtasks: [{ id: 'sub1', text: '战术演习LS-5', completed: false, points: 20 }, { id: 'sub2', text: '资源保障SK-5', completed: true, points: 20 }],
+                        points: 100,
+                        frequency: 1
                     },
                     { 
                         id: '2', text: '整合运动动态监控', completed: true, priority: 'URGENT', categoryId: 'cat_2', timestamp: Date.now() - 3600000 * 24 * 3,
-                        subtasks: []
+                        subtasks: [],
+                        points: 200,
+                        frequency: 0
                     },
                 ]);
 
@@ -167,24 +182,41 @@ const App = () => {
 
                 if (savedTemplates) setTemplates(JSON.parse(savedTemplates) as TaskTemplate[]);
                 else setTemplates([
-                    { id: 'tmp_1', text: '每周常规剿灭', priority: 'URGENT', categoryId: 'cat_1', subtasks: ['切尔诺伯格', '龙门外环', '龙门市区'] }
+                    { id: 'tmp_1', text: '每周常规剿灭', priority: 'URGENT', categoryId: 'cat_1', subtasks: [{text: '切尔诺伯格', points: 50}, {text: '龙门外环', points: 50}] }
+                ]);
+                
+                if (savedAchievements) setAchievements(JSON.parse(savedAchievements) as Achievement[]);
+                else setAchievements([
+                    { id: 'ach_1', title: '初级干员', description: '累计获得 1000 积分', targetPoints: 1000 },
+                    { id: 'ach_2', title: '资深干员', description: '累计获得 5000 积分', targetPoints: 5000 },
+                    { id: 'ach_3', title: '荣誉博士', description: '累计获得 10000 积分', targetPoints: 10000 },
+                ]);
+
+                if (savedStoreItems) setStoreItems(JSON.parse(savedStoreItems) as StoreItem[]);
+                else setStoreItems([
+                    { id: '1', name: '理智药剂', cost: 100, description: '恢复部分精力，适合短时加班。', icon: '🧪' },
+                    { id: '2', name: '源石碎片', cost: 500, description: '稀有的矿物结晶，用途广泛。', icon: '💎' },
+                    { id: '3', name: '龙门币箱', cost: 1000, description: '一箱龙门通用货币。', icon: '💰' },
+                    { id: '4', name: '高级作战记录', cost: 2000, description: '记录了高阶作战技巧的录像带。', icon: '📼' },
+                    { id: '5', name: '至纯源石', cost: 5000, description: '极其珍贵的高纯度源石。', icon: '💠' },
+                    { id: '6', name: '招聘许可', cost: 300, description: '罗德岛公开招募凭证。', icon: '📄' },
                 ]);
 
                 if (savedName) setUserName(savedName);
+                if (savedPoints) setUserPoints(parseInt(savedPoints) || 0);
+                if (savedTotalPoints) setTotalEarnedPoints(parseInt(savedTotalPoints) || 0);
+                else setTotalEarnedPoints(parseInt(savedPoints) || 0); // Fallback sync
                 
                 // Restore Audio and State
                 if (savedBgmSource) {
                     setBgmSource(savedBgmSource);
                     addLog('Audio subsystem: Custom track loaded.');
-                    
-                    // Logic Update: If source exists, default to ENABLED unless explicitly disabled in storage
                     if (savedBgmEnabled !== null) {
                          setIsBgmEnabled(JSON.parse(savedBgmEnabled));
                     } else {
                          setIsBgmEnabled(true);
                     }
                 } else {
-                    // No source, use enabled state if exists (though useless without source)
                     if (savedBgmEnabled) setIsBgmEnabled(JSON.parse(savedBgmEnabled));
                 }
 
@@ -206,7 +238,7 @@ const App = () => {
             
             setLoadProgress(100);
             addLog('PRTS Online. Welcome, Doctor.');
-            await new Promise(r => setTimeout(r, 500)); // Wait at 100% briefly
+            await new Promise(r => setTimeout(r, 500)); 
         };
 
         try {
@@ -237,19 +269,16 @@ const App = () => {
 
     // Sync BGM with state
     useEffect(() => {
-        if (isLoading || !audioRef.current) return; // Don't play during loading
+        if (isLoading || !audioRef.current) return; 
         
         if (isBgmEnabled && bgmSource) {
-            // Only update src if it changed to avoid reloading same track
             if (audioRef.current.src !== bgmSource) {
                 audioRef.current.src = bgmSource;
             }
-            // Ensure volume is set
             if (audioRef.current.volume !== 0.4) audioRef.current.volume = 0.4;
             
             audioRef.current.play().catch(err => {
                 console.warn("Autoplay blocked or audio error:", err);
-                // Don't auto-disable here, let the user try again
             });
         } else {
             audioRef.current.pause();
@@ -259,15 +288,18 @@ const App = () => {
     }, [isBgmEnabled, bgmSource, isLoading]);
 
     useEffect(() => {
-        if (isLoading) return; // Don't save during loading phase
+        if (isLoading) return; 
         localStorage.setItem('ri_tasks', JSON.stringify(todos));
         localStorage.setItem('ri_categories', JSON.stringify(categories));
         localStorage.setItem('ri_templates', JSON.stringify(templates));
+        localStorage.setItem('ri_achievements', JSON.stringify(achievements));
+        localStorage.setItem('ri_store_items', JSON.stringify(storeItems));
         localStorage.setItem('ri_user_name', userName);
-    }, [todos, categories, templates, userName, isLoading]);
+        localStorage.setItem('ri_user_points', userPoints.toString());
+        localStorage.setItem('ri_total_earned_points', totalEarnedPoints.toString());
+    }, [todos, categories, templates, achievements, storeItems, userName, userPoints, totalEarnedPoints, isLoading]);
 
     const handleImportMusic = (file: File) => {
-        // Limit file size to ~3MB to prevent localStorage quota exceeded error (typically 5MB limit)
         if (file.size > 3 * 1024 * 1024) {
             alert("警告：音频文件过大。\n\n为确保终端稳定性(LocalStorage限制)，请使用小于 3MB 的音频文件。");
             return;
@@ -280,7 +312,7 @@ const App = () => {
                 try {
                     localStorage.setItem('ri_bgm_source', base64Audio);
                     localStorage.setItem('ri_bgm_name', file.name);
-                    localStorage.setItem('ri_bgm_enabled', 'true'); // Immediately persist enabled state
+                    localStorage.setItem('ri_bgm_enabled', 'true'); 
                     
                     setBgmSource(base64Audio);
                     setBgmName(file.name);
@@ -305,7 +337,7 @@ const App = () => {
         }));
     };
 
-    const addTask = (text: string, priority: Todo['priority'], categoryId?: string, dueDate?: string, subtasks: string[] = []) => {
+    const addTask = (text: string, priority: Todo['priority'], categoryId?: string, dueDate?: string, subtasks: {text: string, points: number}[] = [], points: number = 0, frequency: number = 0) => {
         const newTodo: Todo = {
             id: Math.random().toString(36).substring(2, 11),
             text,
@@ -313,8 +345,10 @@ const App = () => {
             priority,
             categoryId,
             dueDate,
-            subtasks: subtasks.map(s => ({ id: Math.random().toString(36).substring(2, 7), text: s, completed: false })),
-            timestamp: Date.now()
+            subtasks: subtasks.map(s => ({ id: Math.random().toString(36).substring(2, 7), text: s.text, completed: false, points: s.points })),
+            timestamp: Date.now(),
+            points,
+            frequency
         };
         setTodos(prev => [newTodo, ...prev]);
         setIsTaskModalOpen(false);
@@ -326,7 +360,42 @@ const App = () => {
     };
 
     const toggleTodo = (id: string) => {
-        setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed, timestamp: Date.now() } : t));
+        setTodos(prev => {
+            const todo = prev.find(t => t.id === id);
+            if (!todo) return prev;
+
+            const isNowCompleted = !todo.completed;
+            const points = todo.points || 0;
+            
+            // Logic: Update points
+            if (isNowCompleted) {
+                setUserPoints(c => c + points);
+                setTotalEarnedPoints(c => c + points);
+                
+                // RECURRENCE LOGIC
+                if (todo.frequency && todo.frequency > 0) {
+                    const nextDueDate = new Date(todo.dueDate || new Date());
+                    nextDueDate.setDate(nextDueDate.getDate() + todo.frequency);
+                    const dateStr = nextDueDate.toISOString().split('T')[0];
+
+                    const recurringTask: Todo = {
+                        ...todo,
+                        id: Math.random().toString(36).substring(2, 11),
+                        completed: false,
+                        dueDate: dateStr,
+                        timestamp: Date.now(),
+                        subtasks: todo.subtasks.map(s => ({...s, completed: false}))
+                    };
+                    // Insert new task and update current one
+                    return [recurringTask, ...prev.map(t => t.id === id ? { ...t, completed: true, timestamp: Date.now() } : t)];
+                }
+            } else {
+                setUserPoints(c => Math.max(0, c - points));
+                setTotalEarnedPoints(c => Math.max(0, c - points));
+            }
+
+            return prev.map(t => t.id === id ? { ...t, completed: isNowCompleted, timestamp: Date.now() } : t);
+        });
     };
 
     const deleteTodo = (id: string) => {
@@ -336,6 +405,20 @@ const App = () => {
     const toggleSubtask = (taskId: string, subtaskId: string) => {
         setTodos(prev => prev.map(todo => {
             if (todo.id === taskId) {
+                const subtask = todo.subtasks.find(s => s.id === subtaskId);
+                const points = subtask?.points || 0;
+                
+                if (subtask) {
+                    const isNowCompleted = !subtask.completed;
+                    if (isNowCompleted) {
+                        setUserPoints(c => c + points);
+                        setTotalEarnedPoints(c => c + points);
+                    } else {
+                        setUserPoints(c => Math.max(0, c - points));
+                        setTotalEarnedPoints(c => Math.max(0, c - points));
+                    }
+                }
+
                 const newSubtasks = todo.subtasks.map(sub => sub.id === subtaskId ? { ...sub, completed: !sub.completed } : sub);
                 return { ...todo, subtasks: newSubtasks };
             }
@@ -343,8 +426,8 @@ const App = () => {
         }));
     };
 
-    const addSubtask = (taskId: string, text: string) => {
-        const newSub: Subtask = { id: 'sub_' + Math.random().toString(36).substring(2, 11), text, completed: false };
+    const addSubtask = (taskId: string, text: string, points: number) => {
+        const newSub: Subtask = { id: 'sub_' + Math.random().toString(36).substring(2, 11), text, completed: false, points };
         setTodos(prev => prev.map(todo => todo.id === taskId ? { ...todo, subtasks: [...todo.subtasks, newSub] } : todo));
     };
 
@@ -357,7 +440,9 @@ const App = () => {
                 text: data.text || '未命名模板',
                 priority: (data.priority as Todo['priority']) || 'NORMAL',
                 categoryId: data.categoryId,
-                subtasks: data.subtasks || []
+                subtasks: data.subtasks || [],
+                points: data.points || 100,
+                frequency: data.frequency || 0
             };
             setTemplates(prev => [newTmp, ...prev]);
         }
@@ -366,7 +451,7 @@ const App = () => {
     };
 
     const deployTemplate = (tmp: TaskTemplate) => {
-        addTask(tmp.text, tmp.priority, tmp.categoryId, undefined, tmp.subtasks);
+        addTask(tmp.text, tmp.priority, tmp.categoryId, undefined, tmp.subtasks, tmp.points, tmp.frequency);
         setActiveTab(TabType.TASK);
     };
 
@@ -381,6 +466,34 @@ const App = () => {
         setTodos(prev => prev.map(t => t.categoryId === id ? { ...t, categoryId: undefined } : t));
         setTemplates(prev => prev.map(t => t.categoryId === id ? { ...t, categoryId: undefined } : t));
     };
+
+    // Store Handlers
+    const handlePurchase = (cost: number, itemName: string) => {
+        if (userPoints >= cost) {
+            setUserPoints(prev => prev - cost);
+            alert(`已兑换物资: [${itemName}]`);
+        }
+    };
+    
+    const addStoreItem = (item: Omit<StoreItem, 'id'>) => {
+        setStoreItems(prev => [...prev, { ...item, id: 'item_' + Date.now() }]);
+    };
+    
+    const updateStoreItem = (id: string, updates: Partial<StoreItem>) => {
+        setStoreItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
+    };
+    
+    const deleteStoreItem = (id: string) => {
+        setStoreItems(prev => prev.filter(i => i.id !== id));
+    };
+    
+    const addAchievement = (title: string, description: string, targetPoints: number) => {
+        setAchievements(prev => [...prev, { id: 'ach_' + Date.now(), title, description, targetPoints }]);
+    }
+    
+    const deleteAchievement = (id: string) => {
+        setAchievements(prev => prev.filter(a => a.id !== id));
+    }
 
     const getCategoryName = (id?: string) => categories.find(c => c.id === id)?.name;
 
@@ -572,7 +685,6 @@ const App = () => {
                         {activeTasks.length > 0 ? (
                             <div className="space-y-3">
                                 {selectedTimeFilter === TimeFilterType.ALL && groupedActiveTasks ? (
-                                    /* Fix: Explicitly casting to Record to prevent potential narrowing issues with Object.entries */
                                     Object.entries(groupedActiveTasks as Record<string, Todo[]>).map(([catId, groupTodos]) => (
                                         <div key={catId} className="space-y-3">
                                             <div className="flex items-center space-x-2 py-2">
@@ -638,10 +750,30 @@ const App = () => {
                     </div>
                 )}
 
+                {activeTab === TabType.STORE && (
+                    <div className="animate-in fade-in duration-500 pb-32">
+                        <SettingHeader title="采购中心" />
+                        <StoreView 
+                            items={storeItems}
+                            userPoints={userPoints} 
+                            onPurchase={handlePurchase} 
+                            onAddItem={addStoreItem}
+                            onUpdateItem={updateStoreItem}
+                            onDeleteItem={deleteStoreItem}
+                        />
+                    </div>
+                )}
+
                 {activeTab === TabType.STATISTICS && (
                     <div className="animate-in fade-in duration-500 pb-32">
                         <SettingHeader title="效率统计" />
-                        <StatisticsDashboard todos={todos} />
+                        <StatisticsDashboard 
+                            todos={todos} 
+                            achievements={achievements} 
+                            totalEarnedPoints={totalEarnedPoints}
+                            onAddAchievement={addAchievement}
+                            onDeleteAchievement={deleteAchievement}
+                        />
                         
                         <div className="mt-10 bg-white p-8 border border-gray-200 shadow-sm relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-24 h-24 bg-mesh opacity-10 pointer-events-none"></div>
