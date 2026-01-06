@@ -10,16 +10,32 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => {
-    const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < 1024);
+    // 逻辑优化：检测是否应该收起侧栏
+    // 规则：
+    // 1. 桌面端 (width >= 1024) -> 默认展开 (false)
+    // 2. 移动端横屏 (width > height) -> 默认展开 (false)
+    // 3. 移动端竖屏 -> 默认收起 (true)
+    const checkShouldCollapse = () => {
+        if (typeof window === 'undefined') return true;
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        const isLandscape = width > height;
+        
+        if (width >= 1024 || isLandscape) {
+            return false;
+        }
+        return true;
+    };
+
+    const [isCollapsed, setIsCollapsed] = useState(true); // 初始默认值，useEffect 中会立即修正
     const [currentDate, setCurrentDate] = useState('');
 
     useEffect(() => {
+        // 初始化状态
+        setIsCollapsed(checkShouldCollapse());
+
         const handleResize = () => {
-            if (window.innerWidth < 1024) {
-                setIsCollapsed(true);
-            } else {
-                setIsCollapsed(false);
-            }
+            setIsCollapsed(checkShouldCollapse());
         };
         window.addEventListener('resize', handleResize);
         
@@ -34,7 +50,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
 
     return (
         <div className="flex h-screen w-full bg-[#f4f4f4] overflow-hidden select-none">
-            {/* Sidebar with Gaussian Blur and Safe Area Support */}
+            {/* Sidebar with Gaussian Blur and Safe Area Support 
+                使用 box-content 确保 width 不包含 padding，
+                这样 safe-area-inset-left 会增加到总宽度上，背景色覆盖刘海，
+                而内容则会被 padding 挤到安全区域内。
+            */}
             <aside className={`${sidebarWidth} pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] box-content bg-[#313131]/90 backdrop-blur-xl flex flex-col shrink-0 border-r border-white/5 z-40 shadow-2xl transition-all duration-300 relative`}>
                 <button 
                     onClick={() => setIsCollapsed(!isCollapsed)}
@@ -47,14 +67,15 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                     </div>
                 </button>
 
-                <div className="h-[5rem] flex items-center justify-center border-b border-white/5 overflow-hidden">
+                <div className="h-[5rem] flex items-center justify-center border-b border-white/5 overflow-hidden shrink-0">
                     <div className="w-8 h-8 bg-white/10 rounded-sm flex items-center justify-center shrink-0">
                         <div className="w-4 h-4 bg-white transform rotate-45"></div>
                     </div>
                     {!isCollapsed && <span className="ml-3 text-white font-black tracking-tighter text-[0.7rem] animate-in slide-in-from-left-2 uppercase">Rhodes Island</span>}
                 </div>
 
-                <nav className="flex flex-col flex-1 pt-8 px-2 space-y-3">
+                {/* 增加 overflow-y-auto 确保横屏高度不足时菜单可滚动，避免被截断 */}
+                <nav className="flex flex-col flex-1 pt-8 px-2 space-y-3 overflow-y-auto scrollbar-hide">
                     <SidebarTab 
                         icon={<Icons.Task />} 
                         label="任务" 
@@ -84,7 +105,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                         collapsed={isCollapsed}
                     />
                     
-                    <div className="flex-1"></div>
+                    <div className="flex-1 min-h-[2rem]"></div>
                     
                     <SidebarTab 
                         icon={<Icons.User />} 
@@ -94,6 +115,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                         special
                         collapsed={isCollapsed}
                     />
+                    {/* 底部留白，防止滚动到底部太贴边 */}
+                    <div className="h-safe-bottom shrink-0 pb-[env(safe-area-inset-bottom)]"></div>
                 </nav>
             </aside>
 
@@ -172,7 +195,7 @@ const SidebarTab: React.FC<SidebarTabProps> = ({ icon, label, active, onClick, s
             onClick={onClick}
             title={collapsed ? label : undefined}
             className={`
-                w-full flex flex-row items-center h-[3.5rem] transition-all duration-200 relative border-l-4
+                w-full flex flex-row items-center min-h-[3.5rem] transition-all duration-200 relative border-l-4 shrink-0
                 ${active 
                     ? 'bg-white text-black border-white shadow-[0px_4px_12px_rgba(0,0,0,0.5),_4px_4px_0px_rgba(45,45,45,1)] z-10 translate-x-1' 
                     : 'bg-black/40 text-gray-300 border-transparent hover:bg-black/60 hover:text-white'}

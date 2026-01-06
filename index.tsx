@@ -143,6 +143,8 @@ const App = () => {
                 const savedTemplates = localStorage.getItem('ri_templates');
                 const savedName = localStorage.getItem('ri_user_name');
                 const savedBgmEnabled = localStorage.getItem('ri_bgm_enabled');
+                const savedBgmSource = localStorage.getItem('ri_bgm_source');
+                const savedBgmName = localStorage.getItem('ri_bgm_name');
                 
                 setLoadProgress(80);
                 addLog('Parsing user configuration...');
@@ -169,20 +171,38 @@ const App = () => {
                 ]);
 
                 if (savedName) setUserName(savedName);
-                if (savedBgmEnabled) setIsBgmEnabled(JSON.parse(savedBgmEnabled));
+                
+                // Restore Audio and State
+                if (savedBgmSource) {
+                    setBgmSource(savedBgmSource);
+                    addLog('Audio subsystem: Custom track loaded.');
+                    
+                    // Logic Update: If source exists, default to ENABLED unless explicitly disabled in storage
+                    if (savedBgmEnabled !== null) {
+                         setIsBgmEnabled(JSON.parse(savedBgmEnabled));
+                    } else {
+                         setIsBgmEnabled(true);
+                    }
+                } else {
+                    // No source, use enabled state if exists (though useless without source)
+                    if (savedBgmEnabled) setIsBgmEnabled(JSON.parse(savedBgmEnabled));
+                }
+
+                if (savedBgmName) setBgmName(savedBgmName);
 
             } catch (e) {
                 console.error("Data corruption detected, resetting defaults.");
                 addLog('WARNING: Local data corrupted. Resetting to factory defaults.');
-                // Fallbacks are already handled by the 'else' blocks above if parsing fails and variables remain default
             }
 
             // Stage 4: Audio System
             setLoadProgress(90);
             addLog('Initializing audio subsystems...');
-            audioRef.current = new Audio();
-            audioRef.current.loop = true;
-            audioRef.current.volume = 0.4;
+            if (!audioRef.current) {
+                audioRef.current = new Audio();
+                audioRef.current.loop = true;
+                audioRef.current.volume = 0.4;
+            }
             
             setLoadProgress(100);
             addLog('PRTS Online. Welcome, Doctor.');
@@ -220,12 +240,16 @@ const App = () => {
         if (isLoading || !audioRef.current) return; // Don't play during loading
         
         if (isBgmEnabled && bgmSource) {
+            // Only update src if it changed to avoid reloading same track
             if (audioRef.current.src !== bgmSource) {
                 audioRef.current.src = bgmSource;
             }
+            // Ensure volume is set
+            if (audioRef.current.volume !== 0.4) audioRef.current.volume = 0.4;
+            
             audioRef.current.play().catch(err => {
                 console.warn("Autoplay blocked or audio error:", err);
-                setIsBgmEnabled(false);
+                // Don't auto-disable here, let the user try again
             });
         } else {
             audioRef.current.pause();
@@ -235,7 +259,7 @@ const App = () => {
     }, [isBgmEnabled, bgmSource, isLoading]);
 
     useEffect(() => {
-        if (isLoading) return; // Don't save during loading phase (could overwrite with empty)
+        if (isLoading) return; // Don't save during loading phase
         localStorage.setItem('ri_tasks', JSON.stringify(todos));
         localStorage.setItem('ri_categories', JSON.stringify(categories));
         localStorage.setItem('ri_templates', JSON.stringify(templates));
@@ -243,10 +267,31 @@ const App = () => {
     }, [todos, categories, templates, userName, isLoading]);
 
     const handleImportMusic = (file: File) => {
-        const url = URL.createObjectURL(file);
-        setBgmSource(url);
-        setBgmName(file.name);
-        setIsBgmEnabled(true);
+        // Limit file size to ~3MB to prevent localStorage quota exceeded error (typically 5MB limit)
+        if (file.size > 3 * 1024 * 1024) {
+            alert("警告：音频文件过大。\n\n为确保终端稳定性(LocalStorage限制)，请使用小于 3MB 的音频文件。");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const base64Audio = e.target?.result as string;
+            if (base64Audio) {
+                try {
+                    localStorage.setItem('ri_bgm_source', base64Audio);
+                    localStorage.setItem('ri_bgm_name', file.name);
+                    localStorage.setItem('ri_bgm_enabled', 'true'); // Immediately persist enabled state
+                    
+                    setBgmSource(base64Audio);
+                    setBgmName(file.name);
+                    setIsBgmEnabled(true);
+                } catch (err) {
+                    alert("缓存失败：浏览器存储空间不足。\n请尝试更小的文件或清理缓存。");
+                    console.error("Storage failed", err);
+                }
+            }
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleDelayTasks = (days: number) => {
