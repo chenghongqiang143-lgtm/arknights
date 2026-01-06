@@ -65,7 +65,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ progress, logs, error, on
                     <div className="h-24 overflow-hidden border-l-2 border-white/20 pl-4 flex flex-col justify-end">
                         {logs.slice(-4).map((log, idx) => (
                             <div key={idx} className="text-[10px] jetbrains text-gray-500 uppercase tracking-wide leading-relaxed animate-in slide-in-from-left-2 fade-in duration-300">
-                                <span className="text-[#0098dc] mr-2">>></span>{log}
+                                <span className="text-[#0098dc] mr-2">&gt;&gt;</span>{log}
                             </div>
                         ))}
                     </div>
