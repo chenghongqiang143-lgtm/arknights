@@ -35,6 +35,7 @@ export interface TaskTemplate {
     categoryId?: string;
     subtasks: { text: string; points: number }[]; 
     frequency?: number;
+    recurrenceLimit?: number;
     points?: number;
 }
 
@@ -49,6 +50,10 @@ export interface Todo {
     timestamp: number;
     points: number;
     frequency?: number; // 0 or undefined means one-time
+    recurrenceLimit?: number; // Remaining times to repeat
+    hidden?: boolean; // If true, hidden from list but kept for stats
+    penalized?: boolean; // If true, points have been deducted for overdue
+    hasRecurred?: boolean; // If true, the next recurrence task has already been generated
 }
 
 export interface Achievement {
@@ -65,4 +70,23 @@ export interface StoreItem {
     cost: number;
     description: string;
     icon: string;
+}
+
+export interface PurchaseRecord {
+    id: string;
+    itemName: string;
+    cost: number;
+    timestamp: number;
+    isGacha: boolean;
+}
+
+export interface AppData {
+    todos: Todo[];
+    categories: Category[];
+    templates: TaskTemplate[];
+    achievements: Achievement[];
+    userPoints: number;
+    storeItems: StoreItem[];
+    purchaseHistory: PurchaseRecord[];
+    isBgmEnabled: boolean;
 }
