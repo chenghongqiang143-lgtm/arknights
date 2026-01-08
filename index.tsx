@@ -484,6 +484,40 @@ const App = () => {
         }
     };
 
+    // Modal Back Button Handling logic
+    const isAnyModalOpen = isTaskModalOpen || !!editingTodo || isTemplateModalOpen || isBackupModalOpen;
+    const historyStatePushed = useRef(false);
+
+    useEffect(() => {
+        if (isAnyModalOpen) {
+            // Push a new history entry when a modal opens
+            window.history.pushState({ modal: true }, '');
+            historyStatePushed.current = true;
+
+            const handlePopState = () => {
+                // When back button is pressed, the browser consumes the history state.
+                // We mark it as not pushed (so cleanup doesn't push back again) and close modals.
+                historyStatePushed.current = false;
+                setIsTaskModalOpen(false);
+                setEditingTodo(null);
+                setIsTemplateModalOpen(false);
+                setIsBackupModalOpen(false);
+            };
+
+            window.addEventListener('popstate', handlePopState);
+
+            return () => {
+                window.removeEventListener('popstate', handlePopState);
+                // If the modal is closed programmatically (via UI button/background click),
+                // we need to revert the history state we pushed manually.
+                if (historyStatePushed.current) {
+                    window.history.back();
+                    historyStatePushed.current = false;
+                }
+            };
+        }
+    }, [isAnyModalOpen]);
+
     // Grouping Logic
     const groupedTasks = activeTasks.reduce((groups, task) => {
         const catId = task.categoryId || 'uncategorized';
