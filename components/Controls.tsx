@@ -4,6 +4,56 @@ import { createPortal } from 'react-dom';
 import { Todo, Category, Subtask, TaskTemplate, Achievement, StoreItem, PurchaseRecord, TimeFilterType } from '../types';
 import { Icons, COLORS } from '../constants';
 
+export const LoadingScreen = () => {
+    return (
+        <div className="fixed inset-0 bg-[#1a1a1a] z-[9999] flex flex-col items-center justify-center overflow-hidden select-none">
+            {/* Hexagon Container */}
+            <div className="relative w-32 h-32 flex items-center justify-center">
+                 {/* Outer rotating ring */}
+                 <div className="absolute inset-0 border border-[#333] loading-hexagon animate-[spin_10s_linear_infinite]"></div>
+                 
+                 {/* Inner pulses */}
+                 <div className="absolute inset-4 bg-[#2d2d2d] loading-hexagon flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+                     <Icons.RhodesLogo className="w-16 h-16 text-[#fff] opacity-80 animate-pulse" />
+                 </div>
+                 
+                 {/* Scanning line effect */}
+                 <div className="absolute inset-0 loading-hexagon overflow-hidden opacity-30">
+                     <div className="w-full h-full bg-gradient-to-b from-transparent via-[#0098dc] to-transparent -translate-y-full animate-[scan_2s_linear_infinite]"></div>
+                 </div>
+            </div>
+
+            {/* Text */}
+            <div className="mt-12 text-center space-y-4">
+                <h1 className="text-3xl font-black italic tracking-tighter text-white uppercase" style={{ textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>
+                    Rhodes Island
+                </h1>
+                <div className="flex items-center justify-center space-x-1">
+                    <span className="w-1 h-4 bg-[#0098dc] animate-[pulse_0.5s_ease-in-out_infinite]"></span>
+                    <span className="w-1 h-3 bg-[#0098dc] animate-[pulse_0.5s_ease-in-out_infinite_0.1s]"></span>
+                    <span className="w-1 h-5 bg-[#0098dc] animate-[pulse_0.5s_ease-in-out_infinite_0.2s]"></span>
+                    <span className="text-xs font-mono text-gray-400 tracking-[0.3em] ml-2">SYSTEM INITIALIZING</span>
+                </div>
+            </div>
+
+            {/* Corner decorations */}
+            <div className="absolute top-8 left-8 w-32 h-32 border-l-2 border-t-2 border-white/10"></div>
+            <div className="absolute bottom-8 right-8 w-32 h-32 border-r-2 border-b-2 border-white/10"></div>
+            
+            <div className="absolute bottom-10 font-mono text-[10px] text-gray-600 tracking-widest">
+                PRTS TERMINAL CONNECTION ESTABLISHED
+            </div>
+            
+            <style>{`
+                @keyframes scan {
+                    0% { transform: translateY(-100%); }
+                    100% { transform: translateY(100%); }
+                }
+            `}</style>
+        </div>
+    );
+};
+
 interface StrategicModalProps {
     isOpen: boolean;
     onClose: () => void;

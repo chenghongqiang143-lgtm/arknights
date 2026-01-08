@@ -18,7 +18,8 @@ import {
     FilterBar,
     AchievementToast,
     PointPopup,
-    DataBackupModal
+    DataBackupModal,
+    LoadingScreen
 } from './components/Controls';
 import { 
     Todo, 
@@ -68,6 +69,8 @@ const DEFAULT_ACHIEVEMENTS: Achievement[] = [
 
 const App = () => {
     const [activeTab, setActiveTab] = useState<TabType>(TabType.TASK);
+    const [isLoading, setIsLoading] = useState(true);
+
     const [todos, setTodos] = useLocalStorage<Todo[]>('todos', []);
     const [categories, setCategories] = useLocalStorage<Category[]>('categories', [
         { id: '1', name: '日常事务' },
@@ -107,6 +110,13 @@ const App = () => {
     const [taskFilter, setTaskFilter] = useState<TimeFilterType>(TimeFilterType.ALL);
     
     const audioRef = useRef<HTMLAudioElement | null>(null);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 2200);
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         if (!audioRef.current) {
@@ -531,6 +541,10 @@ const App = () => {
         if (b === 'uncategorized') return -1;
         return 0;
     });
+
+    if (isLoading) {
+        return <LoadingScreen />;
+    }
 
     return (
         <Layout 
