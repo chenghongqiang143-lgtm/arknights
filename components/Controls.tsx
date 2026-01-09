@@ -104,7 +104,7 @@ export const AchievementToast = ({ achievement, onClose }: { achievement: Achiev
                     <Icons.Medal />
                 </div>
                 <div className="p-4 flex-1">
-                    <div className="text-[10px] font-black tracking-widest text-[#ffcf00] uppercase mb-1">徽章解锁 / MEDAL OBTAINED</div>
+                    <div className="text-[10px] font-black tracking-widest text-[#ffcf00] uppercase mb-1">徽章解锁</div>
                     <div className="font-bold text-lg leading-none mb-1">{achievement.title}</div>
                     <div className="text-xs text-gray-400">{achievement.description}</div>
                 </div>
@@ -177,13 +177,13 @@ export const DataBackupModal = ({ isOpen, onClose, onImport }: { isOpen: boolean
                         onClick={() => { setMode('EXPORT'); setJsonStr(''); }}
                         className={`px-4 py-2 text-xs font-black tracking-widest ${mode === 'EXPORT' ? 'bg-[#313131] text-white shadow-sm' : 'text-gray-500 hover:text-black'}`}
                     >
-                        导出备份 EXPORT
+                        导出备份
                     </button>
                     <button 
                         onClick={() => { setMode('IMPORT'); setJsonStr(''); }}
                         className={`px-4 py-2 text-xs font-black tracking-widest ${mode === 'IMPORT' ? 'bg-[#313131] text-white shadow-sm' : 'text-gray-500 hover:text-black'}`}
                     >
-                        恢复数据 IMPORT
+                        恢复数据
                     </button>
                 </div>
 
@@ -201,7 +201,7 @@ export const DataBackupModal = ({ isOpen, onClose, onImport }: { isOpen: boolean
                                 onClick={handleCopy}
                                 className={`px-6 py-2 text-xs font-black tracking-widest uppercase transition-colors ${copySuccess ? 'bg-green-500 text-white' : 'bg-[#0098dc] text-white hover:bg-[#0081bb]'}`}
                             >
-                                {copySuccess ? '已复制 Copied' : '复制到剪贴板 Copy'}
+                                {copySuccess ? '已复制' : '复制到剪贴板'}
                             </button>
                         </div>
                     </div>
@@ -223,7 +223,7 @@ export const DataBackupModal = ({ isOpen, onClose, onImport }: { isOpen: boolean
                                 onClick={handleImport}
                                 className="bg-red-500 text-white px-6 py-2 text-xs font-black tracking-widest uppercase hover:bg-red-600 shadow-lg"
                             >
-                                确认恢复 Restore
+                                确认恢复
                             </button>
                         </div>
                     </div>
@@ -333,6 +333,9 @@ export const TaskRow: React.FC<TaskRowProps> = ({ todo, categoryName, onToggle, 
         }
     };
 
+    // Fix: Explicitly check for > 0 to avoid rendering '0' string when frequency is 0
+    const showFrequency = todo.frequency !== undefined && todo.frequency > 0;
+
     return (
         <div className={`flex flex-col mb-4 transition-all duration-300 ${todo.completed ? 'opacity-50 grayscale-[0.8]' : ''}`}>
             <div 
@@ -360,7 +363,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({ todo, categoryName, onToggle, 
                     <div className="flex items-center space-x-2 mb-1">
                         {todo.priority === 'URGENT' && <span className="text-[9px] font-black bg-[#ffcf00] text-black px-1.5 py-0.5 tracking-wider">紧急</span>}
                         {todo.penalized && <span className="text-[9px] font-black bg-red-500 text-white px-1.5 py-0.5 tracking-wider">已惩罚</span>}
-                        {todo.frequency && todo.frequency > 0 && <div className="flex items-center gap-1 text-[9px] text-[#0098dc]"><Icons.Repeat /> <span>{todo.frequency}天</span></div>}
+                        {showFrequency && <div className="flex items-center gap-1 text-[9px] text-[#0098dc]"><Icons.Repeat /> <span>{todo.frequency}天</span></div>}
                         <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">{categoryName}</span>
                     </div>
                     <div className={`font-bold text-gray-800 ${todo.completed ? 'line-through decoration-2 decoration-[#0098dc]' : ''}`}>
@@ -466,7 +469,7 @@ export const TaskInput: React.FC<{
     return (
         <div className="space-y-4">
             <div className="flex flex-col space-y-1">
-                <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">作战目标 / MISSION OBJECTIVE</label>
+                <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">作战目标</label>
                 <input 
                     className="w-full bg-white border-b-2 border-gray-300 p-2 focus:border-[#0098dc] focus:outline-none font-bold text-lg" 
                     value={text} 
@@ -477,14 +480,14 @@ export const TaskInput: React.FC<{
             
             <div className="grid grid-cols-2 gap-4">
                  <div>
-                    <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">优先级 / PRIORITY</label>
+                    <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">优先级</label>
                     <div className="flex mt-1 space-x-2">
                         <button onClick={() => setPriority('NORMAL')} className={`flex-1 py-2 text-xs font-black border ${priority === 'NORMAL' ? 'bg-[#0098dc] border-[#0098dc] text-white' : 'border-gray-300 text-gray-400'}`}>普通</button>
                         <button onClick={() => setPriority('URGENT')} className={`flex-1 py-2 text-xs font-black border ${priority === 'URGENT' ? 'bg-[#ffcf00] border-[#ffcf00] text-black' : 'border-gray-300 text-gray-400'}`}>紧急</button>
                     </div>
                  </div>
                  <div>
-                    <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">分类 / CATEGORY</label>
+                    <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">分类</label>
                     <select 
                         className="w-full mt-1 bg-white border border-gray-300 p-2 text-sm focus:border-[#0098dc] focus:outline-none"
                         value={categoryId}
@@ -497,7 +500,7 @@ export const TaskInput: React.FC<{
 
             <div className="grid grid-cols-2 gap-4">
                 <div>
-                     <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">截止日期 / DEADLINE</label>
+                     <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">截止日期</label>
                      <input 
                          type="date"
                          className="w-full mt-1 bg-white border border-gray-300 p-2 text-sm focus:border-[#0098dc] focus:outline-none"
@@ -506,7 +509,7 @@ export const TaskInput: React.FC<{
                      />
                 </div>
                 <div>
-                     <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">报酬 / REWARD (PTS)</label>
+                     <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">报酬 (PTS)</label>
                      <input 
                          type="number"
                          className="w-full mt-1 bg-white border border-gray-300 p-2 text-sm focus:border-[#0098dc] focus:outline-none"
@@ -518,7 +521,7 @@ export const TaskInput: React.FC<{
 
              <div className="grid grid-cols-2 gap-4">
                 <div>
-                     <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">循环周期 / FREQUENCY (天)</label>
+                     <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">循环周期 (天)</label>
                      <input 
                          type="number"
                          placeholder="0 为一次性"
@@ -528,7 +531,7 @@ export const TaskInput: React.FC<{
                      />
                 </div>
                 <div>
-                     <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">循环次数 / REPEAT LIMIT</label>
+                     <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">循环次数限制</label>
                      <input 
                          type="number"
                          placeholder="次数"
@@ -541,7 +544,7 @@ export const TaskInput: React.FC<{
             </div>
 
             <div>
-                <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">子任务 / SUBTASKS</label>
+                <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">子任务</label>
                 <div className="mt-2 space-y-2">
                     {subtasks.map((s, idx) => (
                         <div key={idx} className="flex justify-between items-center text-sm bg-white p-2 border border-gray-100">
@@ -572,7 +575,7 @@ export const TaskInput: React.FC<{
                     onClick={handleSubmit} 
                     className="bg-[#2d2d2d] text-white px-8 py-3 text-xs font-black tracking-[0.2em] uppercase hover:bg-[#0098dc] transition-colors shadow-lg border-b-4 border-black active:border-b-0 active:translate-y-1"
                 >
-                    确认部署 / CONFIRM
+                    确认部署
                 </button>
             </div>
         </div>
@@ -600,7 +603,7 @@ export const TaskEditForm: React.FC<{
     return (
         <div className="space-y-4">
              <div className="flex flex-col space-y-1">
-                <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">作战目标 / MISSION NAME</label>
+                <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">作战目标</label>
                 <input 
                     className="w-full bg-white border-b-2 border-gray-300 p-2 focus:border-[#0098dc] focus:outline-none font-bold text-lg" 
                     value={text} 
@@ -610,14 +613,14 @@ export const TaskEditForm: React.FC<{
             
              <div className="grid grid-cols-2 gap-4">
                  <div>
-                    <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">优先级 / PRIORITY</label>
+                    <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">优先级</label>
                     <div className="flex mt-1 space-x-2">
                         <button onClick={() => setPriority('NORMAL')} className={`flex-1 py-2 text-xs font-black border ${priority === 'NORMAL' ? 'bg-[#0098dc] border-[#0098dc] text-white' : 'border-gray-300 text-gray-400'}`}>普通</button>
                         <button onClick={() => setPriority('URGENT')} className={`flex-1 py-2 text-xs font-black border ${priority === 'URGENT' ? 'bg-[#ffcf00] border-[#ffcf00] text-black' : 'border-gray-300 text-gray-400'}`}>紧急</button>
                     </div>
                  </div>
                  <div>
-                     <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">报酬 / REWARD (PTS)</label>
+                     <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">报酬 (PTS)</label>
                      <input 
                          type="number"
                          className="w-full mt-1 bg-white border border-gray-300 p-2 text-sm focus:border-[#0098dc] focus:outline-none"
@@ -629,7 +632,7 @@ export const TaskEditForm: React.FC<{
 
             <div className="grid grid-cols-2 gap-4">
                 <div>
-                     <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">截止日期 / DEADLINE</label>
+                     <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">截止日期</label>
                      <input 
                          type="date"
                          className="w-full mt-1 bg-white border border-gray-300 p-2 text-sm focus:border-[#0098dc] focus:outline-none"
@@ -638,7 +641,7 @@ export const TaskEditForm: React.FC<{
                      />
                 </div>
                  <div>
-                    <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">分类 / CATEGORY</label>
+                    <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">分类</label>
                     <select 
                         className="w-full mt-1 bg-white border border-gray-300 p-2 text-sm focus:border-[#0098dc] focus:outline-none"
                         value={categoryId}
@@ -650,12 +653,12 @@ export const TaskEditForm: React.FC<{
             </div>
 
             <div className="pt-4 flex justify-end space-x-4">
-                <button onClick={onCancel} className="text-gray-500 text-xs font-bold hover:text-black">取消 / CANCEL</button>
+                <button onClick={onCancel} className="text-gray-500 text-xs font-bold hover:text-black">取消</button>
                 <button 
                     onClick={handleSave} 
                     className="bg-[#0098dc] text-white px-6 py-2 text-xs font-black tracking-widest uppercase hover:bg-[#0081bb] shadow-sm"
                 >
-                    保存 / SAVE
+                    保存
                 </button>
             </div>
         </div>
@@ -674,7 +677,7 @@ export const CategoryManager: React.FC<{
 
     return (
         <div className="space-y-4 border-t border-gray-200 pt-6">
-            <h3 className="text-sm font-black tracking-widest uppercase text-gray-500">分类管理 / CATEGORY MANAGEMENT</h3>
+            <h3 className="text-sm font-black tracking-widest uppercase text-gray-500">分类管理</h3>
             <div className="flex space-x-2">
                 <input 
                     className="flex-1 border border-gray-300 p-2 text-sm focus:border-[#0098dc] focus:outline-none"
@@ -686,7 +689,7 @@ export const CategoryManager: React.FC<{
                     onClick={() => { if(newCat) { onAdd(newCat); setNewCat(''); } }}
                     className="bg-[#313131] text-white px-4 text-xs font-black tracking-widest"
                 >
-                    添加 / ADD
+                    添加
                 </button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -753,7 +756,7 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({ template, categoryName
                     onClick={() => onDeploy(template)}
                     className="flex-1 bg-[#2d2d2d] text-white py-2 text-xs font-black tracking-widest uppercase hover:bg-[#0098dc] transition-colors"
                 >
-                    部署 / DEPLOY
+                    部署
                 </button>
                 <button 
                     onClick={() => onEdit(template)}
@@ -799,7 +802,7 @@ export const TemplateInput: React.FC<{
     return (
         <div className="space-y-4">
              <div className="flex flex-col space-y-1">
-                <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">模板名称 / TEMPLATE NAME</label>
+                <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">模板名称</label>
                 <input 
                     className="w-full bg-white border-b-2 border-gray-300 p-2 focus:border-[#0098dc] focus:outline-none font-bold text-lg" 
                     value={text} 
@@ -809,14 +812,14 @@ export const TemplateInput: React.FC<{
 
             <div className="grid grid-cols-2 gap-4">
                  <div>
-                    <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">默认优先级 / PRIORITY</label>
+                    <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">默认优先级</label>
                     <div className="flex mt-1 space-x-2">
                         <button onClick={() => setPriority('NORMAL')} className={`flex-1 py-2 text-xs font-black border ${priority === 'NORMAL' ? 'bg-[#0098dc] border-[#0098dc] text-white' : 'border-gray-300 text-gray-400'}`}>普通</button>
                         <button onClick={() => setPriority('URGENT')} className={`flex-1 py-2 text-xs font-black border ${priority === 'URGENT' ? 'bg-[#ffcf00] border-[#ffcf00] text-black' : 'border-gray-300 text-gray-400'}`}>紧急</button>
                     </div>
                  </div>
                  <div>
-                    <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">分类 / CATEGORY</label>
+                    <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">分类</label>
                     <select 
                         className="w-full mt-1 bg-white border border-gray-300 p-2 text-sm focus:border-[#0098dc] focus:outline-none"
                         value={categoryId}
@@ -829,7 +832,7 @@ export const TemplateInput: React.FC<{
 
             <div className="grid grid-cols-2 gap-4">
                 <div>
-                     <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">报酬 / REWARD (PTS)</label>
+                     <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">报酬 (PTS)</label>
                      <input 
                          type="number"
                          className="w-full mt-1 bg-white border border-gray-300 p-2 text-sm focus:border-[#0098dc] focus:outline-none"
@@ -838,7 +841,7 @@ export const TemplateInput: React.FC<{
                      />
                 </div>
                  <div>
-                     <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">循环周期 / FREQUENCY (天)</label>
+                     <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">循环周期 (天)</label>
                      <input 
                          type="number"
                          className="w-full mt-1 bg-white border border-gray-300 p-2 text-sm focus:border-[#0098dc] focus:outline-none"
@@ -850,7 +853,7 @@ export const TemplateInput: React.FC<{
             </div>
 
             <div>
-                <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">循环次数限制 / LIMIT</label>
+                <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">循环次数限制</label>
                 <input 
                     type="number"
                     className="w-full mt-1 bg-white border border-gray-300 p-2 text-sm focus:border-[#0098dc] focus:outline-none"
@@ -861,7 +864,7 @@ export const TemplateInput: React.FC<{
             </div>
 
              <div>
-                <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">子任务模板 / SUBTASKS</label>
+                <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">子任务模板</label>
                 <div className="mt-2 space-y-2">
                     {subtasks.map((s, idx) => (
                         <div key={idx} className="flex justify-between items-center text-sm bg-white p-2 border border-gray-100">
@@ -893,12 +896,12 @@ export const TemplateInput: React.FC<{
             </div>
 
             <div className="pt-4 flex justify-end space-x-4">
-                <button onClick={onCancel} className="text-gray-500 text-xs font-bold hover:text-black">取消 / CANCEL</button>
+                <button onClick={onCancel} className="text-gray-500 text-xs font-bold hover:text-black">取消</button>
                 <button 
                     onClick={handleSubmit} 
                     className="bg-[#2d2d2d] text-white px-6 py-2 text-xs font-black tracking-widest uppercase hover:bg-[#0098dc] shadow-sm"
                 >
-                    保存模板 / SAVE
+                    保存模板
                 </button>
             </div>
         </div>
@@ -909,17 +912,26 @@ export const ScheduleCalendar: React.FC<{
     todos: Todo[];
     getCategoryName: (id: string | undefined) => string | undefined;
 }> = ({ todos, getCategoryName }) => {
-    // Simple 7-day look ahead
+    const [viewMode, setViewMode] = useState<'WEEK' | 'MONTH'>('WEEK');
+    const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState(new Date());
+
+    // Helper for local date string YYYY-MM-DD
+    const toDateString = (date: Date) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    };
+
+    // Simple 7-day look ahead (Existing Logic)
     const days = useMemo(() => {
         const result = [];
         const today = new Date();
         for (let i = 0; i < 7; i++) {
             const d = new Date(today);
             d.setDate(today.getDate() + i);
-            const y = d.getFullYear();
-            const m = String(d.getMonth() + 1).padStart(2, '0');
-            const dayNum = String(d.getDate()).padStart(2, '0');
-            const dateStr = `${y}-${m}-${dayNum}`;
+            const dateStr = toDateString(d);
             
             const tasks = todos.filter(t => t.dueDate === dateStr && !t.completed);
             result.push({ date: d, dateStr, tasks });
@@ -929,34 +941,154 @@ export const ScheduleCalendar: React.FC<{
 
     const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
-    return (
-        <div className="space-y-8">
-            <h2 className="text-xl font-black italic tracking-tighter mb-6">未来七日作战计划 / NEXT 7 DAYS</h2>
-            <div className="space-y-4">
-                {days.map((day, idx) => (
-                    <div key={day.dateStr} className="flex">
-                        <div className="w-16 shrink-0 flex flex-col items-center pt-2 border-r-2 border-[#313131]">
-                            <span className="text-2xl font-black leading-none">{day.date.getDate()}</span>
-                            <span className="text-[10px] font-bold uppercase text-gray-400">{weekDays[day.date.getDay()]}</span>
-                        </div>
-                        <div className="flex-1 pl-4 pb-4 border-b border-gray-100">
-                             {day.tasks.length === 0 ? (
-                                 <div className="text-xs text-gray-300 font-bold tracking-widest py-2">无作战记录</div>
-                             ) : (
-                                 <div className="space-y-2">
-                                     {day.tasks.map(t => (
-                                         <div key={t.id} className={`flex items-center space-x-2 text-sm p-2 bg-white shadow-sm border-l-2 ${t.priority === 'URGENT' ? 'border-l-[#ffcf00]' : 'border-l-gray-300'}`}>
-                                             <div className="w-1.5 h-1.5 bg-[#0098dc] rounded-full"></div>
-                                             <span className="font-bold text-gray-700 flex-1">{t.text}</span>
-                                             <span className="text-[9px] font-black text-gray-400 uppercase">{getCategoryName(t.categoryId)}</span>
-                                         </div>
-                                     ))}
-                                 </div>
-                             )}
-                        </div>
+    // Month View Logic
+    const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
+    const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
+
+    const changeMonth = (offset: number) => {
+        const newMonth = new Date(currentMonth);
+        newMonth.setMonth(newMonth.getMonth() + offset);
+        setCurrentMonth(newMonth);
+    };
+
+    const renderMonthGrid = () => {
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth();
+        const daysCount = getDaysInMonth(year, month);
+        const firstDay = getFirstDayOfMonth(year, month);
+        
+        const blanks = Array(firstDay).fill(null);
+        const dayNumbers = Array.from({ length: daysCount }, (_, i) => i + 1);
+        const allSlots = [...blanks, ...dayNumbers];
+
+        return (
+            <div className="grid grid-cols-7 gap-px bg-gray-200 border border-gray-200">
+                {weekDays.map(d => (
+                    <div key={d} className="bg-[#f4f4f4] text-center text-[10px] font-bold text-gray-400 py-2">
+                        {d}
                     </div>
                 ))}
+                {allSlots.map((day, i) => {
+                    if (!day) return <div key={i} className="bg-white aspect-square"></div>;
+
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const dateObj = new Date(year, month, day);
+                    const isSelected = toDateString(selectedDate) === dateStr;
+                    const isToday = toDateString(new Date()) === dateStr;
+                    
+                    // Check for tasks
+                    const dayTasks = todos.filter(t => t.dueDate === dateStr && !t.completed);
+                    const hasTask = dayTasks.length > 0;
+                    const hasUrgent = dayTasks.some(t => t.priority === 'URGENT');
+
+                    return (
+                        <button
+                            key={i}
+                            onClick={() => setSelectedDate(dateObj)}
+                            className={`bg-white aspect-square flex flex-col items-center justify-center relative hover:bg-gray-50 transition-colors
+                                ${isSelected ? '!bg-[#313131] !text-white' : ''}
+                            `}
+                        >
+                            <span className={`text-xs font-bold ${isToday && !isSelected ? 'text-[#0098dc]' : ''}`}>{day}</span>
+                            {hasTask && (
+                                <div className="flex gap-0.5 mt-1">
+                                    <div className={`w-1 h-1 rounded-full ${hasUrgent ? 'bg-[#ffcf00]' : 'bg-[#0098dc]'}`}></div>
+                                </div>
+                            )}
+                            {isSelected && <div className="absolute inset-0 border-2 border-[#0098dc]"></div>}
+                        </button>
+                    );
+                })}
             </div>
+        );
+    };
+
+    const selectedTasks = useMemo(() => {
+        const dateStr = toDateString(selectedDate);
+        return todos.filter(t => t.dueDate === dateStr && !t.completed);
+    }, [todos, selectedDate]);
+
+    return (
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <h2 className="text-xl font-black italic tracking-tighter">日程规划</h2>
+                
+                {/* View Switcher */}
+                <div className="flex bg-gray-200 p-1">
+                    <button 
+                        onClick={() => setViewMode('WEEK')}
+                        className={`px-4 py-1 text-xs font-black transition-all ${viewMode === 'WEEK' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-gray-700'}`}
+                    >
+                        7日列表
+                    </button>
+                    <button 
+                        onClick={() => setViewMode('MONTH')}
+                        className={`px-4 py-1 text-xs font-black transition-all ${viewMode === 'MONTH' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-gray-700'}`}
+                    >
+                        月视图
+                    </button>
+                </div>
+            </div>
+
+            {viewMode === 'WEEK' ? (
+                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                    {days.map((day, idx) => (
+                        <div key={day.dateStr} className="flex group">
+                            <div className="w-14 shrink-0 flex flex-col items-center pt-2 border-r-2 border-[#313131] group-hover:border-[#0098dc] transition-colors">
+                                <span className="text-2xl font-black leading-none">{day.date.getDate()}</span>
+                                <span className="text-[10px] font-bold uppercase text-gray-400">{weekDays[day.date.getDay()]}</span>
+                            </div>
+                            <div className="flex-1 pl-4 pb-4 border-b border-gray-100">
+                                 {day.tasks.length === 0 ? (
+                                     <div className="text-xs text-gray-300 font-bold tracking-widest py-2">无作战记录</div>
+                                 ) : (
+                                     <div className="space-y-2">
+                                         {day.tasks.map(t => (
+                                             <div key={t.id} className={`flex items-center space-x-2 text-sm p-2 bg-white shadow-sm border-l-2 ${t.priority === 'URGENT' ? 'border-l-[#ffcf00]' : 'border-l-gray-300'}`}>
+                                                 <div className="w-1.5 h-1.5 bg-[#0098dc] rounded-full"></div>
+                                                 <span className="font-bold text-gray-700 flex-1">{t.text}</span>
+                                                 <span className="text-[9px] font-black text-gray-400 uppercase">{getCategoryName(t.categoryId)}</span>
+                                             </div>
+                                         ))}
+                                     </div>
+                                 )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="animate-in fade-in slide-in-from-left-4 duration-300 space-y-4">
+                    {/* Month Controls */}
+                    <div className="flex items-center justify-between bg-white p-2 border border-gray-200">
+                        <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-gray-100"><Icons.ChevronDown className="rotate-90" /></button>
+                        <span className="font-black text-lg">
+                            {currentMonth.getFullYear()} <span className="text-[#0098dc]">/</span> {String(currentMonth.getMonth() + 1).padStart(2, '0')}
+                        </span>
+                        <button onClick={() => changeMonth(1)} className="p-2 hover:bg-gray-100"><Icons.ChevronDown className="-rotate-90" /></button>
+                    </div>
+                    
+                    {renderMonthGrid()}
+
+                    {/* Selected Date Details */}
+                    <div className="bg-[#f9f9f9] border-l-4 border-[#0098dc] p-4 mt-4">
+                        <div className="text-xs font-bold text-gray-400 mb-2">
+                            {selectedDate.getFullYear()}-{String(selectedDate.getMonth()+1).padStart(2,'0')}-{String(selectedDate.getDate()).padStart(2,'0')} 任务列表
+                        </div>
+                        {selectedTasks.length === 0 ? (
+                             <div className="text-sm text-gray-400 font-bold">无作战计划</div>
+                        ) : (
+                             <div className="space-y-2">
+                                 {selectedTasks.map(t => (
+                                     <div key={t.id} className="bg-white p-2 shadow-sm flex items-center justify-between border border-gray-100">
+                                         <span className="text-sm font-bold text-gray-700">{t.text}</span>
+                                         {t.priority === 'URGENT' && <span className="bg-[#ffcf00] text-black text-[9px] px-1 font-black">紧急</span>}
+                                     </div>
+                                 ))}
+                             </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -981,14 +1113,14 @@ export const StatisticsDashboard: React.FC<{
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-[#313131] text-white p-6 relative overflow-hidden">
                     <div className="relative z-10">
-                        <div className="text-[10px] font-black tracking-widest text-gray-400 uppercase">累计获得点数 / TOTAL</div>
+                        <div className="text-[10px] font-black tracking-widest text-gray-400 uppercase">累计获得点数</div>
                         <div className="text-4xl font-black text-[#0098dc] mt-1">{totalEarnedPoints} <span className="text-sm text-white">PTS</span></div>
                     </div>
                     <Icons.Stats />
                 </div>
                  <div className="bg-white p-6 border border-gray-200 relative overflow-hidden">
                     <div className="relative z-10">
-                        <div className="text-[10px] font-black tracking-widest text-gray-400 uppercase">完成率 / RATE</div>
+                        <div className="text-[10px] font-black tracking-widest text-gray-400 uppercase">完成率</div>
                         <div className="text-4xl font-black text-[#2d2d2d] mt-1">{rate}%</div>
                         <div className="w-full bg-gray-100 h-1 mt-4">
                             <div className="bg-[#0098dc] h-full" style={{ width: `${rate}%` }}></div>
@@ -997,13 +1129,13 @@ export const StatisticsDashboard: React.FC<{
                 </div>
                 <div className="bg-white p-6 border border-gray-200 relative overflow-hidden">
                     <div className="relative z-10">
-                        <div className="text-[10px] font-black tracking-widest text-gray-400 uppercase">已完成任务 / COMPLETED</div>
+                        <div className="text-[10px] font-black tracking-widest text-gray-400 uppercase">已完成任务</div>
                         <div className="text-4xl font-black text-[#2d2d2d] mt-1">{completedTasks} <span className="text-lg text-gray-400">/ {totalTasks}</span></div>
                     </div>
                 </div>
             </div>
 
-            <SettingHeader title="成就徽章 / MEDALS" />
+            <SettingHeader title="成就徽章" />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {achievements.map(ach => {
@@ -1059,7 +1191,7 @@ export const StoreView: React.FC<{
             setGachaResult(result);
             setTimeout(() => setGachaResult(null), 3000);
         } else {
-            alert('PTS 不足！/ INSUFFICIENT FUNDS');
+            alert('PTS 不足！');
         }
     };
 
@@ -1067,7 +1199,7 @@ export const StoreView: React.FC<{
         <div className="space-y-8 relative">
              <div className="flex justify-between items-end bg-[#2d2d2d] text-white p-6 border-l-8 border-[#ffcf00]">
                 <div>
-                     <div className="text-[10px] font-black tracking-widest text-gray-400 uppercase">可用预算 / BUDGET</div>
+                     <div className="text-[10px] font-black tracking-widest text-gray-400 uppercase">可用预算</div>
                      <div className="text-5xl font-black text-white mt-2 flex items-baseline">{userPoints}<span className="text-lg ml-2 font-bold text-[#ffcf00]">PTS</span></div>
                 </div>
                 <div className="text-right">
@@ -1080,7 +1212,7 @@ export const StoreView: React.FC<{
                  {/* Gacha Banner */}
                  <div className="col-span-1 md:col-span-2 bg-gradient-to-r from-gray-900 to-gray-800 text-white p-6 relative overflow-hidden flex flex-col justify-center items-start shadow-xl">
                      <div className="relative z-10">
-                        <h3 className="text-2xl font-black italic tracking-tighter mb-1">标准寻访 / HEADHUNTING</h3>
+                        <h3 className="text-2xl font-black italic tracking-tighter mb-1">标准寻访</h3>
                         <p className="text-xs text-gray-400 mb-4 max-w-xs">消耗预算以获取随机物资或干员凭证</p>
                         <button 
                             onClick={handleGachaClick}
@@ -1106,7 +1238,7 @@ export const StoreView: React.FC<{
                              <p className="text-xs text-gray-500 mt-1 h-8 overflow-hidden">{item.description}</p>
                          </div>
                          <button 
-                             onClick={() => { if(userPoints >= item.cost) onPurchase(item.cost, item.name); else alert('预算不足 / INSUFFICIENT PTS'); }}
+                             onClick={() => { if(userPoints >= item.cost) onPurchase(item.cost, item.name); else alert('预算不足'); }}
                              className={`mt-4 w-full py-2 text-xs font-black uppercase tracking-widest ${userPoints >= item.cost ? 'bg-[#313131] text-white hover:bg-[#0098dc]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
                          >
                              购买
@@ -1116,7 +1248,7 @@ export const StoreView: React.FC<{
                  ))}
              </div>
 
-             <SettingHeader title="采购记录 / HISTORY" />
+             <SettingHeader title="采购记录" />
              <div className="bg-white border border-gray-200 max-h-60 overflow-y-auto">
                  {purchaseHistory.slice().reverse().map(record => (
                      <div key={record.id} className="flex justify-between items-center p-3 border-b border-gray-100 text-xs">
@@ -1128,7 +1260,7 @@ export const StoreView: React.FC<{
              </div>
 
              <div className="bg-gray-100 p-4 border border-gray-200 mt-8">
-                 <h4 className="text-xs font-bold text-gray-500 uppercase mb-4">后勤管理 / LOGISTICS</h4>
+                 <h4 className="text-xs font-bold text-gray-500 uppercase mb-4">后勤管理</h4>
                  <div className="flex flex-col space-y-2">
                      <div className="flex space-x-2">
                          <input className="flex-1 p-2 text-xs border border-gray-300" placeholder="商品名称" value={newItemName} onChange={e => setNewItemName(e.target.value)} />
@@ -1175,7 +1307,7 @@ export const SystemSettings: React.FC<{
 }> = ({ isBgmEnabled, onToggleBgm, onImportMusic, currentMusicName, onDelayTasks, onDeleteAllTasks, onPurgeCompleted, onBackup, onRestore }) => {
     return (
         <div className="space-y-6">
-            <h2 className="text-xl font-black italic tracking-tighter">系统设置 / SYSTEM CONFIGURATION</h2>
+            <h2 className="text-xl font-black italic tracking-tighter">系统设置</h2>
             
             <div className="bg-white border border-gray-200 p-6 space-y-6">
                 <div className="flex items-center justify-between">
@@ -1183,11 +1315,12 @@ export const SystemSettings: React.FC<{
                         <h4 className="font-bold text-sm">音频接口</h4>
                         <p className="text-xs text-gray-400">切换背景环境音</p>
                     </div>
+                    {/* Arknights Style Toggle: Rectangular, sharp edges, distinct states */}
                     <button 
                         onClick={() => onToggleBgm(!isBgmEnabled)}
-                        className={`w-12 h-6 rounded-full p-1 transition-colors ${isBgmEnabled ? 'bg-[#0098dc]' : 'bg-gray-300'}`}
+                        className={`w-14 h-6 flex items-center p-0.5 border transition-colors ${isBgmEnabled ? 'border-[#0098dc] bg-[#0098dc]/10' : 'border-gray-400 bg-gray-100'}`}
                     >
-                        <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${isBgmEnabled ? 'translate-x-6' : ''}`}></div>
+                        <div className={`w-6 h-4 bg-[#0098dc] shadow-sm transition-transform duration-300 ${isBgmEnabled ? 'translate-x-7 bg-[#0098dc]' : 'translate-x-0 bg-gray-400'}`}></div>
                     </button>
                 </div>
                 
@@ -1203,7 +1336,7 @@ export const SystemSettings: React.FC<{
                 </div>
             </div>
 
-            <SettingHeader title="数据管理 / DATA" />
+            <SettingHeader title="数据管理" />
             
             <div className="grid grid-cols-2 gap-4">
                 <button 
@@ -1222,7 +1355,7 @@ export const SystemSettings: React.FC<{
                 </button>
             </div>
 
-            <SettingHeader title="调试与重置 / DEBUG" />
+            <SettingHeader title="调试与重置" />
 
             <div className="space-y-2">
                 <div className="flex items-center justify-between bg-red-50 border border-red-100 p-3">
